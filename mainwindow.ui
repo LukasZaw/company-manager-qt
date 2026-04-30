@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>1086</width>
+    <height>669</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,17 +17,17 @@
    <widget class="QWidget" name="verticalLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>30</y>
-      <width>181</width>
-      <height>371</height>
+      <x>0</x>
+      <y>0</y>
+      <width>201</width>
+      <height>611</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
-      <widget class="QPushButton" name="pushButton">
+      <widget class="QPushButton" name="addEmployeeButton">
        <property name="text">
-        <string>PushButton</string>
+        <string>Dodaj pracownika</string>
        </property>
       </widget>
      </item>
@@ -36,8 +36,8 @@
    <widget class="QPushButton" name="pushButton_2">
     <property name="geometry">
      <rect>
-      <x>500</x>
-      <y>200</y>
+      <x>270</x>
+      <y>530</y>
       <width>80</width>
       <height>24</height>
      </rect>
@@ -46,13 +46,23 @@
      <string>PushButton</string>
     </property>
    </widget>
+   <widget class="QTableWidget" name="employeesTable">
+    <property name="geometry">
+     <rect>
+      <x>210</x>
+      <y>10</y>
+      <width>791</width>
+      <height>481</height>
+     </rect>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>1086</width>
      <height>21</height>
     </rect>
    </property>
