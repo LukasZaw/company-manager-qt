@@ -39,4 +39,6 @@ void DatabaseManager::initialize() {
     if (!query.exec(createEmployees)) {
         qDebug() << "CREATE TABLE ERROR:" << query.lastError().text();
     }
+
+
 }

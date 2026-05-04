@@ -2,12 +2,14 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "src/models/table/employeetablemodel.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
-class MainWindow;
+    class MainWindow;
 }
 QT_END_NAMESPACE
+
 
 class MainWindow : public QMainWindow
 {
@@ -20,7 +22,12 @@ public:
 private slots:
     void on_addEmployeeButton_clicked();
 
+    void on_pushButton_2_clicked();
+
 private:
     Ui::MainWindow *ui;
+    EmployeeTableModel* employeeModel;
+
+    void loadEmployees();
 };
 #endif // MAINWINDOW_H
