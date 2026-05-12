@@ -4,6 +4,7 @@
 #include "src/ui/employeedialog.h"
 #include "src/ui/departmentdialog.h"
 #include <QHeaderView>
+#include <QMessageBox>
 
 
 
@@ -80,6 +81,47 @@ void MainWindow::on_deleteEmployeeButton_clicked()
     EmployeeService::deleteEmployee(employee.id);
 
     loadEmployees();
+}
+
+void MainWindow::on_editEmployeeButton_clicked()
+{
+    const QModelIndex index = ui->employeesTableView->currentIndex();
+    if (!index.isValid()) {
+        QMessageBox::information(this, tr("Informacja"), tr("Wybierz pracownika z listy."));
+        return;
+    }
+
+    editEmployeeAtRow(index.row());
+}
+
+void MainWindow::on_employeesTableView_doubleClicked(const QModelIndex& index)
+{
+    if (!index.isValid())
+        return;
+
+    editEmployeeAtRow(index.row());
+}
+
+void MainWindow::editEmployeeAtRow(int row)
+{
+    const Employee employee = employeeModel->getEmployee(row);
+    if (employee.id <= 0) {
+        QMessageBox::warning(this, tr("Błąd"), tr("Nie udało się odczytać pracownika."));
+        return;
+    }
+
+    EmployeeDialog dialog(this);
+    dialog.setEmployee(employee);
+
+    if (dialog.exec() == QDialog::Accepted) {
+        const Employee updated = dialog.getEmployee();
+        if (!EmployeeService::updateEmployee(updated)) {
+            QMessageBox::warning(this, tr("Błąd"), tr("Nie udało się zapisać zmian."));
+            return;
+        }
+
+        loadEmployees();
+    }
 }
 
 void MainWindow::on_manageDepartmentsButton_clicked()

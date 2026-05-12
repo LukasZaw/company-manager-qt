@@ -4,6 +4,8 @@
 #include <QMainWindow>
 #include "src/models/table/employeetablemodel.h"
 
+class QModelIndex;
+
 QT_BEGIN_NAMESPACE
 namespace Ui {
     class MainWindow;
@@ -24,6 +26,10 @@ private slots:
 
     void on_deleteEmployeeButton_clicked();
 
+    void on_editEmployeeButton_clicked();
+
+    void on_employeesTableView_doubleClicked(const QModelIndex& index);
+
     void on_manageDepartmentsButton_clicked();
 
     void on_actionDepartments_triggered();
@@ -33,5 +39,6 @@ private:
     EmployeeTableModel* employeeModel;
 
     void loadEmployees();
+    void editEmployeeAtRow(int row);
 };
 #endif // MAINWINDOW_H
