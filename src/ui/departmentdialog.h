@@ -19,6 +19,8 @@ public:
 private slots:
     void on_addDepartmentButton_clicked();
     void on_refreshButton_clicked();
+    void on_renameButton_clicked();
+    void on_deleteButton_clicked();
     void on_closeButton_clicked();
 
 private:

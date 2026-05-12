@@ -44,6 +44,20 @@
    </item>
    <item>
     <layout class="QHBoxLayout" name="bottomLayout">
+        <item>
+         <widget class="QPushButton" name="renameButton">
+            <property name="text">
+             <string>Zmień nazwę</string>
+            </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="deleteButton">
+            <property name="text">
+             <string>Usuń</string>
+            </property>
+         </widget>
+        </item>
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">

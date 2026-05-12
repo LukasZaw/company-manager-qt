@@ -69,10 +69,9 @@
    <addaction name="menuDictionaries"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-
   <action name="actionDepartments">
    <property name="text">
-    <string>Działy...</string>
+    <string>Działy</string>
    </property>
   </action>
  </widget>

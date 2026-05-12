@@ -4,6 +4,7 @@
 #include "../services/departmentservice.h"
 
 #include <QHeaderView>
+#include <QInputDialog>
 #include <QMessageBox>
 
 DepartmentDialog::DepartmentDialog(QWidget* parent)
@@ -49,6 +50,78 @@ void DepartmentDialog::on_addDepartmentButton_clicked() {
 }
 
 void DepartmentDialog::on_refreshButton_clicked() {
+    loadDepartments();
+}
+
+void DepartmentDialog::on_renameButton_clicked() {
+    const QModelIndex index = ui->departmentsTableView->currentIndex();
+    if (!index.isValid()) {
+        QMessageBox::information(this, tr("Informacja"), tr("Wybierz dział z listy."));
+        return;
+    }
+
+    const Department department = m_model->getDepartment(index.row());
+    if (department.id <= 0) {
+        QMessageBox::warning(this, tr("Błąd"), tr("Nieprawidłowy dział."));
+        return;
+    }
+
+    bool ok = false;
+    const QString newName = QInputDialog::getText(
+        this,
+        tr("Zmień nazwę działu"),
+        tr("Nowa nazwa:"),
+        QLineEdit::Normal,
+        department.name,
+        &ok
+    );
+
+    if (!ok)
+        return;
+
+    if (newName.trimmed().isEmpty()) {
+        QMessageBox::warning(this, tr("Błąd"), tr("Nazwa działu nie może być pusta."));
+        return;
+    }
+
+    if (!DepartmentService::updateDepartment(department.id, newName)) {
+        QMessageBox::warning(this, tr("Błąd"), tr("Nie udało się zmienić nazwy działu. Możliwe, że nazwa już istnieje."));
+        return;
+    }
+
+    loadDepartments();
+}
+
+void DepartmentDialog::on_deleteButton_clicked() {
+    const QModelIndex index = ui->departmentsTableView->currentIndex();
+    if (!index.isValid()) {
+        QMessageBox::information(this, tr("Informacja"), tr("Wybierz dział z listy."));
+        return;
+    }
+
+    const Department department = m_model->getDepartment(index.row());
+    if (department.id <= 0) {
+        QMessageBox::warning(this, tr("Błąd"), tr("Nieprawidłowy dział."));
+        return;
+    }
+
+    const auto reply = QMessageBox::question(
+        this,
+        tr("Potwierdzenie"),
+        tr("Usunąć dział '%1'?" ).arg(department.name),
+        QMessageBox::Yes | QMessageBox::No,
+        QMessageBox::No
+    );
+
+    if (reply != QMessageBox::Yes)
+        return;
+
+    QString errorMessage;
+    if (!DepartmentService::deleteDepartment(department.id, &errorMessage)) {
+        QMessageBox::warning(this, tr("Błąd"), errorMessage.isEmpty() ? tr("Nie udało się usunąć działu.") : errorMessage);
+        return;
+    }
+
     loadDepartments();
 }
 
