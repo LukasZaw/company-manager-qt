@@ -121,6 +121,27 @@
              <number>6</number>
             </property>
             <item>
+                         <layout class="QHBoxLayout" name="employeesFilterLayout">
+                            <item>
+                             <widget class="QLabel" name="employeesFilterLabel">
+                                <property name="text">
+                                 <string>Szukaj:</string>
+                                </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QLineEdit" name="employeeFilterLineEdit">
+                                <property name="placeholderText">
+                                 <string>Wpisz, aby filtrować pracowników…</string>
+                                </property>
+                                <property name="clearButtonEnabled">
+                                 <bool>true</bool>
+                                </property>
+                             </widget>
+                            </item>
+                         </layout>
+                        </item>
+                        <item>
              <widget class="QTableView" name="employeesTableView"/>
             </item>
            </layout>

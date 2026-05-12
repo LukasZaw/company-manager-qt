@@ -5,6 +5,8 @@
 #include "src/ui/departmentdialog.h"
 #include <QHeaderView>
 #include <QMessageBox>
+#include <QRegularExpression>
+#include <QSortFilterProxyModel>
 
 
 
@@ -16,7 +18,14 @@ MainWindow::MainWindow(QWidget *parent)
 
     employeeModel = new EmployeeTableModel(this);
 
-    ui->employeesTableView->setModel(employeeModel);
+    employeeProxyModel = new QSortFilterProxyModel(this);
+    employeeProxyModel->setSourceModel(employeeModel);
+    employeeProxyModel->setDynamicSortFilter(true);
+    employeeProxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
+    employeeProxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
+    employeeProxyModel->setFilterKeyColumn(-1);
+
+    ui->employeesTableView->setModel(employeeProxyModel);
 
     ui->employeesTableView
         ->setSelectionBehavior(
@@ -34,6 +43,20 @@ MainWindow::MainWindow(QWidget *parent)
     ui->employeesTableView
         ->horizontalHeader()
         ->setStretchLastSection(true);
+
+    connect(ui->employeeFilterLineEdit, &QLineEdit::textChanged, this, [this](const QString& text) {
+        const QString trimmed = text.trimmed();
+        if (trimmed.isEmpty()) {
+            employeeProxyModel->setFilterRegularExpression(QRegularExpression());
+            return;
+        }
+
+        const QRegularExpression rx(
+            QRegularExpression::escape(trimmed),
+            QRegularExpression::CaseInsensitiveOption
+        );
+        employeeProxyModel->setFilterRegularExpression(rx);
+    });
 
     loadEmployees();
 }
@@ -76,7 +99,8 @@ void MainWindow::on_deleteEmployeeButton_clicked()
     if (!index.isValid())
         return;
 
-    Employee employee = employeeModel->getEmployee(index.row());
+    const QModelIndex sourceIndex = employeeProxyModel->mapToSource(index);
+    Employee employee = employeeModel->getEmployee(sourceIndex.row());
 
     EmployeeService::deleteEmployee(employee.id);
 
@@ -91,7 +115,8 @@ void MainWindow::on_editEmployeeButton_clicked()
         return;
     }
 
-    editEmployeeAtRow(index.row());
+    const QModelIndex sourceIndex = employeeProxyModel->mapToSource(index);
+    editEmployeeAtRow(sourceIndex.row());
 }
 
 void MainWindow::on_employeesTableView_doubleClicked(const QModelIndex& index)
@@ -99,7 +124,8 @@ void MainWindow::on_employeesTableView_doubleClicked(const QModelIndex& index)
     if (!index.isValid())
         return;
 
-    editEmployeeAtRow(index.row());
+    const QModelIndex sourceIndex = employeeProxyModel->mapToSource(index);
+    editEmployeeAtRow(sourceIndex.row());
 }
 
 void MainWindow::editEmployeeAtRow(int row)
