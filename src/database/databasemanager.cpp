@@ -28,17 +28,21 @@ QSqlDatabase DatabaseManager::getDatabase() {
 
 void DatabaseManager::initialize() {
     QSqlQuery query;
-
-    QString createEmployees =
+    const QString createEmployees =
         "CREATE TABLE IF NOT EXISTS employees ("
         "id INTEGER PRIMARY KEY AUTOINCREMENT,"
         "first_name TEXT NOT NULL,"
-        "last_name TEXT NOT NULL"
+        "last_name TEXT NOT NULL,"
+        "email TEXT,"
+        "phone TEXT,"
+        "position TEXT,"
+        "department TEXT,"
+        "hire_date TEXT,"
+        "status INTEGER DEFAULT 1,"
+        "notes TEXT"
         ");";
 
     if (!query.exec(createEmployees)) {
         qDebug() << "CREATE TABLE ERROR:" << query.lastError().text();
     }
-
-
 }

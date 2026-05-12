@@ -17,6 +17,7 @@ public:
     ~EmployeeDialog();
 
     Employee getEmployee() const;
+    void setEmployee(const Employee& employee);
 
 private slots:
     void on_saveButton_clicked();

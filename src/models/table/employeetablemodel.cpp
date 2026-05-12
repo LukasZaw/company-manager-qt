@@ -10,7 +10,7 @@ int EmployeeTableModel::rowCount(const QModelIndex&) const {
 }
 
 int EmployeeTableModel::columnCount( const QModelIndex&) const {
-    return 3;
+    return 9; // ID, Imię, Nazwisko, Email, Telefon, Stanowisko, Dział, Data zatrudnienia, Status
 }
 
 QVariant EmployeeTableModel::data(const QModelIndex& index, int role) const {
@@ -35,6 +35,24 @@ QVariant EmployeeTableModel::data(const QModelIndex& index, int role) const {
     case 2:
         return employee.lastName;
 
+    case 3:
+        return employee.email;
+
+    case 4:
+        return employee.phone;
+
+    case 5:
+        return employee.position;
+
+    case 6:
+        return employee.department;
+
+    case 7:
+        return employee.hireDate.isValid() ? employee.hireDate.toString(Qt::ISODate) : QString();
+
+    case 8:
+        return employee.active ? QObject::tr("Aktywny") : QObject::tr("Nieaktywny");
+
     default:
         return {};
     }
@@ -58,6 +76,24 @@ QVariant EmployeeTableModel::headerData(int section, Qt::Orientation orientation
     case 2:
         return "Nazwisko";
 
+    case 3:
+        return "Email";
+
+    case 4:
+        return "Telefon";
+
+    case 5:
+        return "Stanowisko";
+
+    case 6:
+        return "Dział";
+
+    case 7:
+        return "Data zatrudnienia";
+
+    case 8:
+        return "Status";
+
     default:
         return {};
     }
@@ -72,6 +108,8 @@ void EmployeeTableModel::setEmployees(const QList<Employee>& employees) {
 }
 
 Employee EmployeeTableModel::getEmployee(int row) const {
+    if (row < 0 || row >= m_employees.size())
+        return Employee{};
 
-    return m_employees[row];
+    return m_employees.at(row);
 }

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>518</width>
-    <height>259</height>
+    <width>600</width>
+    <height>420</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,24 +18,133 @@
     <rect>
      <x>10</x>
      <y>0</y>
-     <width>261</width>
-     <height>51</height>
+     <width>400</width>
+     <height>31</height>
     </rect>
    </property>
    <property name="font">
     <font>
-     <pointsize>16</pointsize>
+     <pointsize>14</pointsize>
     </font>
    </property>
    <property name="text">
-    <string>Dodawanie pracoiwnika</string>
+    <string>Dodawanie / edycja pracownika</string>
    </property>
+  </widget>
+  <widget class="QWidget" name="formWidget">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>40</y>
+     <width>580</width>
+     <height>320</height>
+    </rect>
+   </property>
+   <layout class="QFormLayout" name="formLayout">
+    <item row="0" column="0">
+     <widget class="QLabel" name="label_firstname">
+      <property name="text">
+       <string>Imię:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QLineEdit" name="firstNameEdit"/>
+    </item>
+    <item row="1" column="0">
+     <widget class="QLabel" name="label_lastname">
+      <property name="text">
+       <string>Nazwisko:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QLineEdit" name="lastNameEdit"/>
+    </item>
+    <item row="2" column="0">
+     <widget class="QLabel" name="label_email">
+      <property name="text">
+       <string>Email:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1">
+     <widget class="QLineEdit" name="emailEdit"/>
+    </item>
+    <item row="3" column="0">
+     <widget class="QLabel" name="label_phone">
+      <property name="text">
+       <string>Telefon:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="1">
+     <widget class="QLineEdit" name="phoneEdit"/>
+    </item>
+    <item row="4" column="0">
+     <widget class="QLabel" name="label_position">
+      <property name="text">
+       <string>Stanowisko:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="1">
+     <widget class="QLineEdit" name="positionEdit"/>
+    </item>
+    <item row="5" column="0">
+     <widget class="QLabel" name="label_department">
+      <property name="text">
+       <string>Dział:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="1">
+     <widget class="QLineEdit" name="departmentEdit"/>
+    </item>
+    <item row="6" column="0">
+     <widget class="QLabel" name="label_hiredate">
+      <property name="text">
+       <string>Data zatrudnienia:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="1">
+     <widget class="QDateEdit" name="hireDateEdit">
+      <property name="calendarPopup">
+       <bool>true</bool>
+      </property>
+      <property name="displayFormat">
+       <string>yyyy-MM-dd</string>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="0">
+     <widget class="QLabel" name="label_status">
+      <property name="text">
+       <string>Status (aktywny):</string>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="1">
+     <widget class="QCheckBox" name="statusCheckBox"/>
+    </item>
+    <item row="8" column="0">
+     <widget class="QLabel" name="label_notes">
+      <property name="text">
+       <string>Notatki:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="8" column="1">
+     <widget class="QTextEdit" name="notesEdit"/>
+    </item>
+   </layout>
   </widget>
   <widget class="QPushButton" name="saveButton">
    <property name="geometry">
     <rect>
-     <x>340</x>
-     <y>220</y>
+     <x>360</x>
+     <y>370</y>
      <width>80</width>
      <height>24</height>
     </rect>
@@ -47,8 +156,8 @@
   <widget class="QPushButton" name="cancleButton">
    <property name="geometry">
     <rect>
-     <x>430</x>
-     <y>220</y>
+     <x>460</x>
+     <y>370</y>
      <width>80</width>
      <height>24</height>
     </rect>
@@ -56,52 +165,6 @@
    <property name="text">
     <string>Anuluj</string>
    </property>
-  </widget>
-  <widget class="QWidget" name="">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>70</y>
-     <width>221</width>
-     <height>81</height>
-    </rect>
-   </property>
-   <layout class="QFormLayout" name="formLayout">
-    <item row="0" column="0">
-     <widget class="QLabel" name="label_firstname">
-      <property name="font">
-       <font>
-        <pointsize>12</pointsize>
-       </font>
-      </property>
-      <property name="text">
-       <string>Imię:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="1">
-     <widget class="QLineEdit" name="firstNameEdit"/>
-    </item>
-    <item row="1" column="0">
-     <widget class="QLabel" name="label_lastname">
-      <property name="font">
-       <font>
-        <pointsize>12</pointsize>
-       </font>
-      </property>
-      <property name="text">
-       <string>Nazwisko:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="1">
-     <widget class="QLineEdit" name="lastNameEdit">
-      <property name="text">
-       <string/>
-      </property>
-     </widget>
-    </item>
-   </layout>
   </widget>
  </widget>
  <resources/>
