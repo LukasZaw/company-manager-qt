@@ -10,7 +10,9 @@ QList<Employee> EmployeeService::getAllEmployees(){
 
     QSqlQuery query;
     const QString sql = QStringLiteral(
-        "SELECT id, first_name, last_name, email, phone, position, department, hire_date, status, notes FROM employees"
+        "SELECT e.id, e.first_name, e.last_name, e.email, e.phone, e.position, e.department_id, d.name AS department_name, e.hire_date, e.status, e.notes "
+        "FROM employees e "
+        "LEFT JOIN departments d ON d.id = e.department_id"
     );
 
     if (!query.exec(sql)) {
@@ -27,7 +29,8 @@ QList<Employee> EmployeeService::getAllEmployees(){
         e.email = query.value("email").toString();
         e.phone = query.value("phone").toString();
         e.position = query.value("position").toString();
-        e.department = query.value("department").toString();
+        e.departmentId = query.value("department_id").toInt();
+        e.department = query.value("department_name").toString();
         e.hireDate = QDate::fromString(query.value("hire_date").toString(), Qt::ISODate);
         e.active = query.value("status").toInt() != 0;
         e.notes = query.value("notes").toString();
@@ -41,7 +44,7 @@ QList<Employee> EmployeeService::getAllEmployees(){
 Employee EmployeeService::getEmployeeById(int id) {
     Employee e;
     QSqlQuery query;
-    query.prepare("SELECT id, first_name, last_name, email, phone, position, department, hire_date, status, notes FROM employees WHERE id = :id");
+    query.prepare("SELECT e.id, e.first_name, e.last_name, e.email, e.phone, e.position, e.department_id, d.name AS department_name, e.hire_date, e.status, e.notes FROM employees e LEFT JOIN departments d ON d.id = e.department_id WHERE e.id = :id");
     query.bindValue(":id", id);
 
     if (!query.exec()) {
@@ -56,7 +59,8 @@ Employee EmployeeService::getEmployeeById(int id) {
         e.email = query.value("email").toString();
         e.phone = query.value("phone").toString();
         e.position = query.value("position").toString();
-        e.department = query.value("department").toString();
+        e.departmentId = query.value("department_id").toInt();
+        e.department = query.value("department_name").toString();
         e.hireDate = QDate::fromString(query.value("hire_date").toString(), Qt::ISODate);
         e.active = query.value("status").toInt() != 0;
         e.notes = query.value("notes").toString();
@@ -68,14 +72,14 @@ Employee EmployeeService::getEmployeeById(int id) {
 bool EmployeeService::addEmployee(const Employee& employee) {
     QSqlQuery query;
 
-    query.prepare("INSERT INTO employees (first_name, last_name, email, phone, position, department, hire_date, status, notes) VALUES (:first_name, :last_name, :email, :phone, :position, :department, :hire_date, :status, :notes)");
+    query.prepare("INSERT INTO employees (first_name, last_name, email, phone, position, department_id, hire_date, status, notes) VALUES (:first_name, :last_name, :email, :phone, :position, :department_id, :hire_date, :status, :notes)");
 
     query.bindValue(":first_name", employee.firstName);
     query.bindValue(":last_name", employee.lastName);
     query.bindValue(":email", employee.email);
     query.bindValue(":phone", employee.phone);
     query.bindValue(":position", employee.position);
-    query.bindValue(":department", employee.department);
+    query.bindValue(":department_id", employee.departmentId);
     query.bindValue(":hire_date", employee.hireDate.isValid() ? employee.hireDate.toString(Qt::ISODate) : QString());
     query.bindValue(":status", employee.active ? 1 : 0);
     query.bindValue(":notes", employee.notes);
@@ -91,14 +95,14 @@ bool EmployeeService::addEmployee(const Employee& employee) {
 bool EmployeeService::updateEmployee(const Employee& employee) {
     QSqlQuery query;
 
-    query.prepare("UPDATE employees SET first_name = :first_name, last_name = :last_name, email = :email, phone = :phone, position = :position, department = :department, hire_date = :hire_date, status = :status, notes = :notes WHERE id = :id");
+    query.prepare("UPDATE employees SET first_name = :first_name, last_name = :last_name, email = :email, phone = :phone, position = :position, department_id = :department_id, hire_date = :hire_date, status = :status, notes = :notes WHERE id = :id");
 
     query.bindValue(":first_name", employee.firstName);
     query.bindValue(":last_name", employee.lastName);
     query.bindValue(":email", employee.email);
     query.bindValue(":phone", employee.phone);
     query.bindValue(":position", employee.position);
-    query.bindValue(":department", employee.department);
+    query.bindValue(":department_id", employee.departmentId);
     query.bindValue(":hire_date", employee.hireDate.isValid() ? employee.hireDate.toString(Qt::ISODate) : QString());
     query.bindValue(":status", employee.active ? 1 : 0);
     query.bindValue(":notes", employee.notes);

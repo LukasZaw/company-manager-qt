@@ -11,7 +11,8 @@ public:
     QString email;
     QString phone;
     QString position;
-    QString department;
+    int departmentId{0};
+    QString department; // display name (from departments table)
     QDate hireDate;
     bool active{true};
     QString notes;

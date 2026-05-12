@@ -24,6 +24,7 @@ private slots:
 
 private:
     Ui::EmployeeDialog *ui;
+    int m_employeeId{0};
 };
 
 #endif // EMPLOYEEDIALOG_H

@@ -18,6 +18,14 @@ bool DatabaseManager::connect() {
         return false;
     }
 
+    // Enforce foreign keys in SQLite
+    {
+        QSqlQuery pragmaQuery;
+        if (!pragmaQuery.exec("PRAGMA foreign_keys = ON;")) {
+            qDebug() << "PRAGMA foreign_keys ERROR:" << pragmaQuery.lastError().text();
+        }
+    }
+
     initialize();
     return true;
 }
@@ -28,6 +36,23 @@ QSqlDatabase DatabaseManager::getDatabase() {
 
 void DatabaseManager::initialize() {
     QSqlQuery query;
+
+    const QString createDepartments =
+        "CREATE TABLE IF NOT EXISTS departments ("
+        "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+        "name TEXT NOT NULL UNIQUE"
+        ");";
+
+    if (!query.exec(createDepartments)) {
+        qDebug() << "CREATE TABLE departments ERROR:" << query.lastError().text();
+        return;
+    }
+
+    // Ensure at least one department exists (minimal default)
+    if (!query.exec("INSERT OR IGNORE INTO departments (name) VALUES ('Ogólny');")) {
+        qDebug() << "INSERT default department ERROR:" << query.lastError().text();
+    }
+
     const QString createEmployees =
         "CREATE TABLE IF NOT EXISTS employees ("
         "id INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -36,13 +61,18 @@ void DatabaseManager::initialize() {
         "email TEXT,"
         "phone TEXT,"
         "position TEXT,"
-        "department TEXT,"
+        "department_id INTEGER NOT NULL,"
         "hire_date TEXT,"
         "status INTEGER DEFAULT 1,"
-        "notes TEXT"
+        "notes TEXT,"
+        "FOREIGN KEY(department_id) REFERENCES departments(id) ON UPDATE CASCADE ON DELETE RESTRICT"
         ");";
 
     if (!query.exec(createEmployees)) {
         qDebug() << "CREATE TABLE ERROR:" << query.lastError().text();
+    }
+
+    if (!query.exec("CREATE INDEX IF NOT EXISTS idx_employees_department_id ON employees(department_id);")) {
+        qDebug() << "CREATE INDEX ERROR:" << query.lastError().text();
     }
 }

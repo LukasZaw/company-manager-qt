@@ -17,17 +17,25 @@ set(PROJECT_SOURCES
         mainwindow.cpp
         mainwindow.h
         mainwindow.ui
+    src/database/databasemanager.h
+    src/database/databasemanager.cpp
+    src/models/employee.h
+    src/models/department.h
+    src/services/employeeservice.h
+    src/services/employeeservice.cpp
+    src/services/departmentservice.h
+    src/services/departmentservice.cpp
+    src/ui/employeedialog.h
+    src/ui/employeedialog.cpp
+    src/ui/employeedialog.ui
+    src/models/table/employeetablemodel.h
+    src/models/table/employeetablemodel.cpp
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(company-manager-qt
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
-        src/database/databasemanager.h src/database/databasemanager.cpp
-        src/models/employee.h
-        src/services/employeeservice.h src/services/employeeservice.cpp
-        src/ui/employeedialog.h src/ui/employeedialog.cpp src/ui/employeedialog.ui
-        src/models/table/employeetablemodel.h src/models/table/employeetablemodel.cpp
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET company-manager-qt APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
