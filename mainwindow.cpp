@@ -2,6 +2,7 @@
 #include "./ui_mainwindow.h"
 #include "src/services/employeeservice.h"
 #include "src/ui/employeedialog.h"
+#include "src/ui/departmentdialog.h"
 #include <QHeaderView>
 
 
@@ -80,5 +81,11 @@ void MainWindow::on_pushButton_2_clicked()
     EmployeeService::deleteEmployee(employee.id);
 
     loadEmployees();
+}
+
+void MainWindow::on_actionDepartments_triggered()
+{
+    DepartmentDialog dialog(this);
+    dialog.exec();
 }
 

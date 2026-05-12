@@ -60,8 +60,21 @@
      <height>21</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuDictionaries">
+    <property name="title">
+     <string>Słowniki</string>
+    </property>
+    <addaction name="actionDepartments"/>
+   </widget>
+   <addaction name="menuDictionaries"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+
+  <action name="actionDepartments">
+   <property name="text">
+    <string>Działy...</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>

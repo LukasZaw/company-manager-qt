@@ -22,3 +22,21 @@ QList<Department> DepartmentService::getAllDepartments() {
 
     return list;
 }
+
+bool DepartmentService::addDepartment(const QString& name) {
+    const QString trimmed = name.trimmed();
+    if (trimmed.isEmpty()) {
+        return false;
+    }
+
+    QSqlQuery query;
+    query.prepare("INSERT INTO departments (name) VALUES (:name)");
+    query.bindValue(":name", trimmed);
+
+    if (!query.exec()) {
+        qDebug() << "INSERT department ERROR:" << query.lastError().text();
+        return false;
+    }
+
+    return true;
+}

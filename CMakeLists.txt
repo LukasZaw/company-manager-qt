@@ -28,8 +28,13 @@ set(PROJECT_SOURCES
     src/ui/employeedialog.h
     src/ui/employeedialog.cpp
     src/ui/employeedialog.ui
+    src/ui/departmentdialog.h
+    src/ui/departmentdialog.cpp
+    src/ui/departmentdialog.ui
     src/models/table/employeetablemodel.h
     src/models/table/employeetablemodel.cpp
+    src/models/table/departmenttablemodel.h
+    src/models/table/departmenttablemodel.cpp
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

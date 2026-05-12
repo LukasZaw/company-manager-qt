@@ -6,4 +6,5 @@
 class DepartmentService {
 public:
     static QList<Department> getAllDepartments();
+    static bool addDepartment(const QString& name);
 };
