@@ -10,14 +10,14 @@ Desktopowa aplikacja napisana w C++ z wykorzystaniem frameworka Qt, służąca d
 
 ### Funkcje
 
-- Dodawanie pracownika
-- Edytowanie danych pracownika
-- Usuwanie pracownika
-- Przeglądanie listy pracowników
-- Wyszukiwanie pracowników
-- Filtrowanie pracowników
-- Przypisywanie pracowników do działów
-- Przypisywanie pracowników do zadań
+- [x] Dodawanie pracownika
+- [x] Edytowanie danych pracownika
+- [x] Usuwanie pracownika
+- [x] Przeglądanie listy pracowników
+- [x] Wyszukiwanie pracowników
+- [x] Filtrowanie pracowników
+- [x] Przypisywanie pracowników do działów
+- [ ] Przypisywanie pracowników do zadań
 
 ### Dane pracownika
 
