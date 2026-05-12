@@ -66,8 +66,7 @@ void MainWindow::on_addEmployeeButton_clicked()
 
 }
 
-
-void MainWindow::on_pushButton_2_clicked()
+void MainWindow::on_deleteEmployeeButton_clicked()
 {
     QModelIndex index =
         ui->employeesTableView
@@ -81,6 +80,11 @@ void MainWindow::on_pushButton_2_clicked()
     EmployeeService::deleteEmployee(employee.id);
 
     loadEmployees();
+}
+
+void MainWindow::on_manageDepartmentsButton_clicked()
+{
+    on_actionDepartments_triggered();
 }
 
 void MainWindow::on_actionDepartments_triggered()

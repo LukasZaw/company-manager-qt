@@ -22,7 +22,9 @@ public:
 private slots:
     void on_addEmployeeButton_clicked();
 
-    void on_pushButton_2_clicked();
+    void on_deleteEmployeeButton_clicked();
+
+    void on_manageDepartmentsButton_clicked();
 
     void on_actionDepartments_triggered();
 
