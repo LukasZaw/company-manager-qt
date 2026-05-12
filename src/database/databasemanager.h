@@ -1,5 +1,4 @@
-#ifndef DATABASEMANAGER_H
-#define DATABASEMANAGER_H
+#pragma once
 
 #include <QSqlDatabase>
 
@@ -13,5 +12,3 @@ private:
     static QSqlDatabase db;
     static void initialize();
 };
-
-#endif // DATABASEMANAGER_H

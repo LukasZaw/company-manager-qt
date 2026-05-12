@@ -1,6 +1,6 @@
 #include "mainwindow.h"
 
-#include "src/database/DatabaseManager.h"
+#include "src/database/databasemanager.h"
 
 #include <QApplication>
 
