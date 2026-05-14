@@ -21,20 +21,36 @@ set(PROJECT_SOURCES
     src/database/databasemanager.cpp
     src/models/employee.h
     src/models/department.h
+    src/models/product.h
+    src/models/category.h
     src/services/employeeservice.h
     src/services/employeeservice.cpp
     src/services/departmentservice.h
     src/services/departmentservice.cpp
+    src/services/productservice.h
+    src/services/productservice.cpp
+    src/services/categoryservice.h
+    src/services/categoryservice.cpp
     src/ui/employeedialog.h
     src/ui/employeedialog.cpp
     src/ui/employeedialog.ui
     src/ui/departmentdialog.h
     src/ui/departmentdialog.cpp
     src/ui/departmentdialog.ui
+    src/ui/categorydialog.h
+    src/ui/categorydialog.cpp
+    src/ui/categorydialog.ui
+    src/ui/productdialog.h
+    src/ui/productdialog.cpp
+    src/ui/productdialog.ui
     src/models/table/employeetablemodel.h
     src/models/table/employeetablemodel.cpp
     src/models/table/departmenttablemodel.h
     src/models/table/departmenttablemodel.cpp
+    src/models/table/producttablemodel.h
+    src/models/table/producttablemodel.cpp
+    src/models/table/categorytablemodel.h
+    src/models/table/categorytablemodel.cpp
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

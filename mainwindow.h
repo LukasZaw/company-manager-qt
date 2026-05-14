@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "src/models/table/employeetablemodel.h"
+#include "src/models/table/producttablemodel.h"
 
 class QModelIndex;
 class QSortFilterProxyModel;
@@ -35,12 +36,30 @@ private slots:
 
     void on_actionDepartments_triggered();
 
+    void on_addProductButton_clicked();
+
+    void on_editProductButton_clicked();
+
+    void on_deleteProductButton_clicked();
+
+    void on_productsTableView_doubleClicked(const QModelIndex& index);
+
+    void on_manageCategoriesButton_clicked();
+
+    void on_actionCategories_triggered();
+
 private:
     Ui::MainWindow *ui;
     EmployeeTableModel* employeeModel;
     QSortFilterProxyModel* employeeProxyModel;
 
+    ProductTableModel* productModel;
+    QSortFilterProxyModel* productProxyModel;
+
     void loadEmployees();
+    void loadProducts();
     void editEmployeeAtRow(int row);
+
+    void editProductAtRow(int row);
 };
 #endif // MAINWINDOW_H
