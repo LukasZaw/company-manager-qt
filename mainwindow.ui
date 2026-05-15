@@ -274,12 +274,288 @@
        </attribute>
        <layout class="QVBoxLayout" name="warehouseLayout">
         <item>
-         <widget class="QLabel" name="warehousePlaceholder">
-          <property name="text">
-           <string>Widok magazynu (w przygotowaniu)</string>
-          </property>
-         </widget>
+             <widget class="QWidget" name="warehouseActionBar">
+               <layout class="QHBoxLayout" name="warehouseActionLayout">
+                <property name="leftMargin">
+                  <number>0</number>
+                </property>
+                <property name="topMargin">
+                  <number>0</number>
+                </property>
+                <property name="rightMargin">
+                  <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                  <number>0</number>
+                </property>
+                <item>
+                  <widget class="QPushButton" name="warehouseReceiptButton">
+                   <property name="text">
+                     <string>Przyjęcie</string>
+                   </property>
+                  </widget>
+                </item>
+                <item>
+                  <widget class="QPushButton" name="warehouseIssueButton">
+                   <property name="text">
+                     <string>Wydanie</string>
+                   </property>
+                  </widget>
+                </item>
+                <item>
+                  <widget class="QPushButton" name="warehouseRelocateButton">
+                   <property name="text">
+                     <string>Przesunięcie</string>
+                   </property>
+                  </widget>
+                </item>
+                <item>
+                  <widget class="QPushButton" name="warehouseAdjustButton">
+                   <property name="text">
+                     <string>Korekta</string>
+                   </property>
+                  </widget>
+                </item>
+                <item>
+                  <spacer name="warehouseActionSpacer">
+                   <property name="orientation">
+                     <enum>Qt::Orientation::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                   </property>
+                  </spacer>
+                </item>
+                <item>
+                  <widget class="QLabel" name="warehouseSearchLabel">
+                   <property name="text">
+                     <string>Szukaj:</string>
+                   </property>
+                  </widget>
+                </item>
+                <item>
+                  <widget class="QLineEdit" name="warehouseSearchLineEdit">
+                   <property name="placeholderText">
+                     <string>Wpisz, aby wyszukać operacje…</string>
+                   </property>
+                   <property name="clearButtonEnabled">
+                     <bool>true</bool>
+                   </property>
+                  </widget>
+                </item>
+               </layout>
+             </widget>
         </item>
+            <item>
+             <widget class="QSplitter" name="warehouseSplitter">
+               <property name="orientation">
+                <enum>Qt::Orientation::Horizontal</enum>
+               </property>
+               <widget class="QWidget" name="warehouseLeftPanel">
+                <property name="minimumSize">
+                  <size>
+                   <width>280</width>
+                   <height>0</height>
+                  </size>
+                </property>
+                <layout class="QVBoxLayout" name="warehouseLeftLayout">
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
+                  <item>
+                   <widget class="QListView" name="warehouseMovementsListView"/>
+                  </item>
+                </layout>
+               </widget>
+               <widget class="QStackedWidget" name="warehouseRightStack">
+                <property name="currentIndex">
+                  <number>0</number>
+                </property>
+                <widget class="QWidget" name="warehouseEmptyPage">
+                  <layout class="QVBoxLayout" name="warehouseEmptyLayout">
+                   <item>
+                     <widget class="QLabel" name="warehouseEmptyLabel">
+                      <property name="text">
+                        <string>Wybierz dokument z listy lub utwórz nową operację.</string>
+                      </property>
+                      <property name="alignment">
+                        <set>Qt::AlignmentFlag::AlignCenter</set>
+                      </property>
+                     </widget>
+                   </item>
+                  </layout>
+                </widget>
+                <widget class="QWidget" name="warehouseDetailsPage">
+                  <layout class="QVBoxLayout" name="warehouseDetailsLayout">
+                   <item>
+                     <layout class="QHBoxLayout" name="warehouseHeaderLayout">
+                      <item>
+                        <layout class="QVBoxLayout" name="warehouseHeaderTextLayout">
+                         <item>
+                           <widget class="QLabel" name="warehouseMovementTitleLabel">
+                            <property name="font">
+                              <font>
+                               <pointsize>14</pointsize>
+                               <bold>true</bold>
+                              </font>
+                            </property>
+                            <property name="text">
+                              <string>Dokument</string>
+                            </property>
+                           </widget>
+                         </item>
+                         <item>
+                           <widget class="QLabel" name="warehouseMovementMetaLabel">
+                            <property name="text">
+                              <string/>
+                            </property>
+                           </widget>
+                         </item>
+                        </layout>
+                      </item>
+                      <item>
+                        <spacer name="warehouseHeaderSpacer">
+                         <property name="orientation">
+                           <enum>Qt::Orientation::Horizontal</enum>
+                         </property>
+                         <property name="sizeHint" stdset="0">
+                           <size>
+                            <width>40</width>
+                            <height>20</height>
+                           </size>
+                         </property>
+                        </spacer>
+                      </item>
+                      <item>
+                        <widget class="QPushButton" name="warehousePostButton">
+                         <property name="text">
+                           <string>Zaksięguj</string>
+                         </property>
+                        </widget>
+                      </item>
+                      <item>
+                        <widget class="QPushButton" name="warehouseCancelMovementButton">
+                         <property name="text">
+                           <string>Anuluj dokument</string>
+                         </property>
+                        </widget>
+                      </item>
+                     </layout>
+                   </item>
+                   <item>
+                     <widget class="QWidget" name="warehouseFormWidget">
+                      <layout class="QFormLayout" name="warehouseFormLayout">
+                        <item row="0" column="0">
+                         <widget class="QLabel" name="warehouseOccurredAtLabel">
+                           <property name="text">
+                            <string>Data:</string>
+                           </property>
+                         </widget>
+                        </item>
+                        <item row="0" column="1">
+                         <widget class="QDateTimeEdit" name="warehouseOccurredAtEdit"/>
+                        </item>
+                        <item row="1" column="0">
+                         <widget class="QLabel" name="warehouseEmployeeLabel">
+                           <property name="text">
+                            <string>Pracownik:</string>
+                           </property>
+                         </widget>
+                        </item>
+                        <item row="1" column="1">
+                         <widget class="QComboBox" name="warehouseEmployeeComboBox"/>
+                        </item>
+                        <item row="2" column="0">
+                         <widget class="QLabel" name="warehouseFromLocationLabel">
+                           <property name="text">
+                            <string>Z:</string>
+                           </property>
+                         </widget>
+                        </item>
+                        <item row="2" column="1">
+                         <widget class="QLineEdit" name="warehouseFromLocationEdit"/>
+                        </item>
+                        <item row="3" column="0">
+                         <widget class="QLabel" name="warehouseToLocationLabel">
+                           <property name="text">
+                            <string>Do:</string>
+                           </property>
+                         </widget>
+                        </item>
+                        <item row="3" column="1">
+                         <widget class="QLineEdit" name="warehouseToLocationEdit"/>
+                        </item>
+                        <item row="4" column="0">
+                         <widget class="QLabel" name="warehouseNotesLabel">
+                           <property name="text">
+                            <string>Uwagi:</string>
+                           </property>
+                         </widget>
+                        </item>
+                        <item row="4" column="1">
+                         <widget class="QPlainTextEdit" name="warehouseNotesEdit"/>
+                        </item>
+                      </layout>
+                     </widget>
+                   </item>
+                   <item>
+                     <layout class="QHBoxLayout" name="warehouseLinesToolbarLayout">
+                      <item>
+                        <widget class="QLabel" name="warehouseLinesLabel">
+                         <property name="text">
+                           <string>Pozycje</string>
+                         </property>
+                        </widget>
+                      </item>
+                      <item>
+                        <spacer name="warehouseLinesSpacer">
+                         <property name="orientation">
+                           <enum>Qt::Orientation::Horizontal</enum>
+                         </property>
+                         <property name="sizeHint" stdset="0">
+                           <size>
+                            <width>40</width>
+                            <height>20</height>
+                           </size>
+                         </property>
+                        </spacer>
+                      </item>
+                      <item>
+                        <widget class="QPushButton" name="warehouseAddLineButton">
+                         <property name="text">
+                           <string>+ Pozycja</string>
+                         </property>
+                        </widget>
+                      </item>
+                      <item>
+                        <widget class="QPushButton" name="warehouseRemoveLineButton">
+                         <property name="text">
+                           <string>Usuń pozycję</string>
+                         </property>
+                        </widget>
+                      </item>
+                     </layout>
+                   </item>
+                   <item>
+                     <widget class="QTableView" name="warehouseLinesTableView"/>
+                   </item>
+                  </layout>
+                </widget>
+               </widget>
+             </widget>
+            </item>
        </layout>
       </widget>
       <widget class="QWidget" name="reportsTab">

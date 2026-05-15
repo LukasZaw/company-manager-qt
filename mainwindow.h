@@ -7,6 +7,10 @@
 
 class QModelIndex;
 class QSortFilterProxyModel;
+class StockMovementsListModel;
+class StockMovementLinesModel;
+class MovementCardDelegate;
+enum class MovementType;
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -48,6 +52,14 @@ private slots:
 
     void on_actionCategories_triggered();
 
+    void on_warehouseAddLineButton_clicked();
+    void on_warehouseRemoveLineButton_clicked();
+
+    void on_warehouseReceiptButton_clicked();
+    void on_warehouseIssueButton_clicked();
+    void on_warehouseRelocateButton_clicked();
+    void on_warehouseAdjustButton_clicked();
+
 private:
     Ui::MainWindow *ui;
     EmployeeTableModel* employeeModel;
@@ -56,10 +68,22 @@ private:
     ProductTableModel* productModel;
     QSortFilterProxyModel* productProxyModel;
 
+    // Warehouse
+    StockMovementsListModel* warehouseMovementsModel{nullptr};
+    StockMovementLinesModel* warehouseLinesModel{nullptr};
+    MovementCardDelegate* warehouseMovementsDelegate{nullptr};
+    int currentWarehouseMovementId{0};
+
     void loadEmployees();
     void loadProducts();
     void editEmployeeAtRow(int row);
 
     void editProductAtRow(int row);
+
+    void initWarehouseUi();
+    void loadWarehouseMovements();
+    void showWarehouseMovement(int movementId);
+    void showWarehouseEmpty();
+    void startNewWarehouseMovement(MovementType type);
 };
 #endif // MAINWINDOW_H

@@ -2,13 +2,20 @@
 #include "./ui_mainwindow.h"
 #include "src/services/employeeservice.h"
 #include "src/services/productservice.h"
+#include "src/services/stockmovementservice.h"
+#include "src/models/stockmovement.h"
+#include "src/models/table/stockmovementslistmodel.h"
+#include "src/models/table/stockmovementlinesmodel.h"
 #include "src/ui/employeedialog.h"
 #include "src/ui/productdialog.h"
 #include "src/ui/departmentdialog.h"
 #include "src/ui/categorydialog.h"
+#include "src/ui/movementcarddelegate.h"
 #include <QHeaderView>
+#include <QItemSelectionModel>
 #include <QMessageBox>
 #include <QRegularExpression>
+#include <QSignalBlocker>
 #include <QSortFilterProxyModel>
 
 
@@ -92,6 +99,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     loadEmployees();
     loadProducts();
+
+    initWarehouseUi();
+    loadWarehouseMovements();
+    showWarehouseEmpty();
 }
 
 MainWindow::~MainWindow()
@@ -286,5 +297,239 @@ void MainWindow::on_actionCategories_triggered()
 
     // Categories may have changed - refresh products view to update category names.
     loadProducts();
+}
+
+void MainWindow::initWarehouseUi()
+{
+    warehouseMovementsModel = new StockMovementsListModel(this);
+    warehouseLinesModel = new StockMovementLinesModel(this);
+
+    ui->warehouseMovementsListView->setModel(warehouseMovementsModel);
+    ui->warehouseMovementsListView->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->warehouseMovementsListView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->warehouseMovementsListView->setUniformItemSizes(false);
+
+    warehouseMovementsDelegate = new MovementCardDelegate(ui->warehouseMovementsListView);
+    ui->warehouseMovementsListView->setItemDelegate(warehouseMovementsDelegate);
+
+    connect(ui->warehouseSearchLineEdit, &QLineEdit::textChanged, this, [this](const QString&) {
+        loadWarehouseMovements();
+    });
+
+    connect(ui->warehouseMovementsListView->selectionModel(), &QItemSelectionModel::currentChanged, this,
+        [this](const QModelIndex& current, const QModelIndex&) {
+            if (!current.isValid()) {
+                showWarehouseEmpty();
+                return;
+            }
+
+            const int id = current.data(StockMovementsListModel::IdRole).toInt();
+            showWarehouseMovement(id);
+        });
+
+    ui->warehouseLinesTableView->setModel(warehouseLinesModel);
+    ui->warehouseLinesTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->warehouseLinesTableView->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->warehouseLinesTableView->horizontalHeader()->setStretchLastSection(true);
+    ui->warehouseLinesTableView->setSortingEnabled(false);
+
+    ui->warehouseOccurredAtEdit->setDisplayFormat("yyyy-MM-dd HH:mm");
+    ui->warehouseOccurredAtEdit->setCalendarPopup(true);
+
+    // Populate employees list (optional).
+    {
+        const QSignalBlocker blocker(ui->warehouseEmployeeComboBox);
+        ui->warehouseEmployeeComboBox->clear();
+        ui->warehouseEmployeeComboBox->addItem(tr("(brak)"), 0);
+        const auto employees = EmployeeService::getAllEmployees();
+        for (const auto& e : employees) {
+            const QString name = (e.firstName.trimmed() + " " + e.lastName.trimmed()).trimmed();
+            ui->warehouseEmployeeComboBox->addItem(name, e.id);
+        }
+    }
+
+    // Read-only mode by default (until posting UI is implemented).
+    ui->warehousePostButton->setEnabled(false);
+    ui->warehouseCancelMovementButton->setEnabled(false);
+    ui->warehouseAddLineButton->setEnabled(false);
+    ui->warehouseRemoveLineButton->setEnabled(false);
+    ui->warehouseLinesTableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+}
+
+void MainWindow::loadWarehouseMovements()
+{
+    const QString search = ui->warehouseSearchLineEdit->text().trimmed();
+    const auto movements = StockMovementService::getMovements(search);
+
+    warehouseMovementsModel->setMovements(movements);
+
+    // Try to preserve selection.
+    int rowToSelect = -1;
+    if (currentWarehouseMovementId > 0) {
+        for (int row = 0; row < movements.size(); ++row) {
+            if (movements.at(row).id == currentWarehouseMovementId) {
+                rowToSelect = row;
+                break;
+            }
+        }
+    }
+
+    if (rowToSelect >= 0) {
+        const QModelIndex idx = warehouseMovementsModel->index(rowToSelect, 0);
+        ui->warehouseMovementsListView->setCurrentIndex(idx);
+        return;
+    }
+
+    if (!movements.isEmpty()) {
+        ui->warehouseMovementsListView->setCurrentIndex(warehouseMovementsModel->index(0, 0));
+        return;
+    }
+
+    showWarehouseEmpty();
+}
+
+void MainWindow::showWarehouseEmpty()
+{
+    currentWarehouseMovementId = 0;
+    ui->warehouseRightStack->setCurrentWidget(ui->warehouseEmptyPage);
+    warehouseLinesModel->setLines({});
+
+    const QSignalBlocker b1(ui->warehouseOccurredAtEdit);
+    const QSignalBlocker b2(ui->warehouseEmployeeComboBox);
+    const QSignalBlocker b3(ui->warehouseFromLocationEdit);
+    const QSignalBlocker b4(ui->warehouseToLocationEdit);
+    const QSignalBlocker b5(ui->warehouseNotesEdit);
+
+    ui->warehouseOccurredAtEdit->setDateTime(QDateTime::currentDateTime());
+    ui->warehouseEmployeeComboBox->setCurrentIndex(0);
+    ui->warehouseFromLocationEdit->clear();
+    ui->warehouseToLocationEdit->clear();
+    ui->warehouseNotesEdit->clear();
+}
+
+void MainWindow::showWarehouseMovement(int movementId)
+{
+    if (movementId <= 0) {
+        showWarehouseEmpty();
+        return;
+    }
+
+    const StockMovement m = StockMovementService::getMovementById(movementId);
+    if (m.id <= 0) {
+        showWarehouseEmpty();
+        return;
+    }
+
+    currentWarehouseMovementId = m.id;
+
+    ui->warehouseRightStack->setCurrentWidget(ui->warehouseDetailsPage);
+
+    ui->warehouseMovementTitleLabel->setText(QString("%1 #%2").arg(movementTypeDisplayName(m.type)).arg(m.id));
+
+    QStringList meta;
+    if (m.occurredAt.isValid())
+        meta << m.occurredAt.toString("yyyy-MM-dd HH:mm");
+    if (!m.employeeName.trimmed().isEmpty())
+        meta << m.employeeName.trimmed();
+    if (m.linesCount > 0)
+        meta << QString("Pozycji: %1").arg(m.linesCount);
+    if (m.canceled)
+        meta << tr("ANULOWANE");
+    ui->warehouseMovementMetaLabel->setText(meta.join(" • "));
+
+    {
+        const QSignalBlocker b1(ui->warehouseOccurredAtEdit);
+        const QSignalBlocker b2(ui->warehouseEmployeeComboBox);
+        const QSignalBlocker b3(ui->warehouseFromLocationEdit);
+        const QSignalBlocker b4(ui->warehouseToLocationEdit);
+        const QSignalBlocker b5(ui->warehouseNotesEdit);
+
+        ui->warehouseOccurredAtEdit->setDateTime(m.occurredAt.isValid() ? m.occurredAt : QDateTime::currentDateTime());
+
+        int employeeIdx = 0;
+        if (m.employeeId > 0) {
+            for (int i = 0; i < ui->warehouseEmployeeComboBox->count(); ++i) {
+                if (ui->warehouseEmployeeComboBox->itemData(i).toInt() == m.employeeId) {
+                    employeeIdx = i;
+                    break;
+                }
+            }
+        }
+        ui->warehouseEmployeeComboBox->setCurrentIndex(employeeIdx);
+
+        ui->warehouseFromLocationEdit->setText(m.fromLocation);
+        ui->warehouseToLocationEdit->setText(m.toLocation);
+        ui->warehouseNotesEdit->setPlainText(m.notes);
+    }
+
+    const auto lines = StockMovementService::getMovementLines(movementId);
+    warehouseLinesModel->setLines(lines);
+
+    // Keep details read-only for now.
+    ui->warehousePostButton->setEnabled(false);
+    ui->warehouseCancelMovementButton->setEnabled(false);
+    ui->warehouseAddLineButton->setEnabled(false);
+    ui->warehouseRemoveLineButton->setEnabled(false);
+    ui->warehouseLinesTableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+}
+
+void MainWindow::startNewWarehouseMovement(MovementType type)
+{
+    Q_UNUSED(type);
+    // UI scaffolding for future posting; keep it read-only until posting flow is implemented.
+    ui->warehouseRightStack->setCurrentWidget(ui->warehouseDetailsPage);
+    ui->warehouseMovementTitleLabel->setText(QString("%1").arg(movementTypeDisplayName(type)));
+    ui->warehouseMovementMetaLabel->setText(tr("Nowy dokument"));
+
+    currentWarehouseMovementId = 0;
+    warehouseLinesModel->setLines({});
+
+    const QSignalBlocker b1(ui->warehouseOccurredAtEdit);
+    const QSignalBlocker b2(ui->warehouseEmployeeComboBox);
+    const QSignalBlocker b3(ui->warehouseFromLocationEdit);
+    const QSignalBlocker b4(ui->warehouseToLocationEdit);
+    const QSignalBlocker b5(ui->warehouseNotesEdit);
+
+    ui->warehouseOccurredAtEdit->setDateTime(QDateTime::currentDateTime());
+    ui->warehouseEmployeeComboBox->setCurrentIndex(0);
+    ui->warehouseFromLocationEdit->clear();
+    ui->warehouseToLocationEdit->clear();
+    ui->warehouseNotesEdit->clear();
+
+    ui->warehousePostButton->setEnabled(false);
+    ui->warehouseCancelMovementButton->setEnabled(false);
+    ui->warehouseAddLineButton->setEnabled(false);
+    ui->warehouseRemoveLineButton->setEnabled(false);
+    ui->warehouseLinesTableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+}
+
+void MainWindow::on_warehouseAddLineButton_clicked()
+{
+    // Posting mode not implemented yet.
+}
+
+void MainWindow::on_warehouseRemoveLineButton_clicked()
+{
+    // Posting mode not implemented yet.
+}
+
+void MainWindow::on_warehouseReceiptButton_clicked()
+{
+    startNewWarehouseMovement(MovementType::Receipt);
+}
+
+void MainWindow::on_warehouseIssueButton_clicked()
+{
+    startNewWarehouseMovement(MovementType::Issue);
+}
+
+void MainWindow::on_warehouseRelocateButton_clicked()
+{
+    startNewWarehouseMovement(MovementType::Relocate);
+}
+
+void MainWindow::on_warehouseAdjustButton_clicked()
+{
+    startNewWarehouseMovement(MovementType::Adjust);
 }
 
