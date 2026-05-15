@@ -17,7 +17,6 @@ Desktopowa aplikacja napisana w C++ z wykorzystaniem frameworka Qt, służąca d
 - [x] Wyszukiwanie pracowników
 - [x] Filtrowanie pracowników
 - [x] Przypisywanie pracowników do działów
-- [ ] Przypisywanie pracowników do zadań
 
 ### Dane pracownika
 
@@ -61,11 +60,11 @@ Desktopowa aplikacja napisana w C++ z wykorzystaniem frameworka Qt, służąca d
 
 ### Funkcje
 
-- Rejestrowanie przyjęć produktów
-- Rejestrowanie wydań produktów
-- Historia operacji magazynowych
-- Aktualizacja stanów magazynowych
-- Przenoszenie produktów między lokalizacjami
+- [x] Rejestrowanie przyjęć produktów
+- [x] Rejestrowanie wydań produktów
+- [x] Historia operacji magazynowych
+- [x] Aktualizacja stanów magazynowych
+- [ ] Przenoszenie produktów między lokalizacjami
 
 ### Operacje magazynowe
 
