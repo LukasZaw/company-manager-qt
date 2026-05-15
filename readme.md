@@ -36,14 +36,14 @@ Desktopowa aplikacja napisana w C++ z wykorzystaniem frameworka Qt, służąca d
 
 ### Funkcje
 
-- Dodawanie produktu
-- Edytowanie produktu
-- Usuwanie produktu
-- Lista produktów
-- Wyszukiwanie produktów
-- Filtrowanie produktów
-- Przypisywanie produktu do lokalizacji
-- Śledzenie stanu magazynowego
+- [x] Dodawanie produktu
+- [x] Edytowanie produktu
+- [x] Usuwanie produktu
+- [x] Lista produktów
+- [x] Wyszukiwanie produktów
+- [x] Filtrowanie produktów
+- [ ] Przypisywanie produktu do lokalizacji
+- [ ] Śledzenie stanu magazynowego
 
 ### Dane produktu
 
