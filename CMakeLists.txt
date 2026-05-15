@@ -23,6 +23,7 @@ set(PROJECT_SOURCES
     src/models/department.h
     src/models/product.h
     src/models/category.h
+        src/models/stockmovement.h
     src/services/employeeservice.h
     src/services/employeeservice.cpp
     src/services/departmentservice.h
