@@ -64,7 +64,7 @@ public:
     QDateTime occurredAt;
 
     int employeeId{0};
-    QString employeeName; // display name (optional)
+    QString employeeName; // display name
 
     QString fromLocation;
     QString toLocation;

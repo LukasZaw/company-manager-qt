@@ -32,6 +32,8 @@ set(PROJECT_SOURCES
     src/services/productservice.cpp
     src/services/categoryservice.h
     src/services/categoryservice.cpp
+    src/services/stockmovementservice.h
+    src/services/stockmovementservice.cpp
     src/ui/employeedialog.h
     src/ui/employeedialog.cpp
     src/ui/employeedialog.ui
