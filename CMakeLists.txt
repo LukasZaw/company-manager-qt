@@ -46,6 +46,8 @@ set(PROJECT_SOURCES
     src/ui/productdialog.h
     src/ui/productdialog.cpp
     src/ui/productdialog.ui
+    src/ui/movementcarddelegate.h
+    src/ui/movementcarddelegate.cpp
     src/models/table/employeetablemodel.h
     src/models/table/employeetablemodel.cpp
     src/models/table/departmenttablemodel.h
@@ -54,6 +56,10 @@ set(PROJECT_SOURCES
     src/models/table/producttablemodel.cpp
     src/models/table/categorytablemodel.h
     src/models/table/categorytablemodel.cpp
+    src/models/table/stockmovementslistmodel.h
+    src/models/table/stockmovementslistmodel.cpp
+    src/models/table/stockmovementlinesmodel.h
+    src/models/table/stockmovementlinesmodel.cpp
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
