@@ -118,4 +118,57 @@ void DatabaseManager::initialize() {
     if (!query.exec("CREATE INDEX IF NOT EXISTS idx_products_category_id ON products(category_id);")) {
         qDebug() << "CREATE INDEX products ERROR:" << query.lastError().text();
     }
+
+    const QString createWarehouseMovements =
+        "CREATE TABLE IF NOT EXISTS warehouse_movements ("
+        "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+        "type TEXT NOT NULL CHECK (type IN ('RECEIPT','ISSUE','RELOCATE','ADJUST')),"
+        "occurred_at TEXT NOT NULL,"
+        "employee_id INTEGER,"
+        "from_location TEXT,"
+        "to_location TEXT,"
+        "notes TEXT,"
+        "is_canceled INTEGER NOT NULL DEFAULT 0 CHECK (is_canceled IN (0,1)),"
+        "affects_stock INTEGER NOT NULL DEFAULT 1 CHECK (affects_stock IN (0,1)),"
+        "FOREIGN KEY(employee_id) REFERENCES employees(id) ON UPDATE CASCADE ON DELETE SET NULL"
+        ");";
+
+    if (!query.exec(createWarehouseMovements)) {
+        qDebug() << "CREATE TABLE warehouse_movements ERROR:" << query.lastError().text();
+        return;
+    }
+
+    const QString createWarehouseMovementLines =
+        "CREATE TABLE IF NOT EXISTS warehouse_movement_lines ("
+        "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+        "movement_id INTEGER NOT NULL,"
+        "product_id INTEGER NOT NULL,"
+        "quantity REAL NOT NULL CHECK (quantity != 0),"
+        "FOREIGN KEY(movement_id) REFERENCES warehouse_movements(id) ON UPDATE CASCADE ON DELETE CASCADE,"
+        "FOREIGN KEY(product_id) REFERENCES products(id) ON UPDATE CASCADE ON DELETE RESTRICT"
+        ");";
+
+    if (!query.exec(createWarehouseMovementLines)) {
+        qDebug() << "CREATE TABLE warehouse_movement_lines ERROR:" << query.lastError().text();
+        return;
+    }
+
+    // indexes on warehouse movements
+    if (!query.exec("CREATE INDEX IF NOT EXISTS idx_warehouse_movements_occurred_at ON warehouse_movements(occurred_at);")) {
+        qDebug() << "CREATE INDEX warehouse_movements ERROR:" << query.lastError().text();
+    }
+    if (!query.exec("CREATE INDEX IF NOT EXISTS idx_warehouse_movements_type ON warehouse_movements(type);")) {
+        qDebug() << "CREATE INDEX warehouse_movements ERROR:" << query.lastError().text();
+    }
+    if (!query.exec("CREATE INDEX IF NOT EXISTS idx_warehouse_movements_employee_id ON warehouse_movements(employee_id);")) {
+        qDebug() << "CREATE INDEX warehouse_movements ERROR:" << query.lastError().text();
+    }
+
+    // indexes on movement lines
+    if (!query.exec("CREATE INDEX IF NOT EXISTS idx_warehouse_movement_lines_movement_id ON warehouse_movement_lines(movement_id);")) {
+        qDebug() << "CREATE INDEX warehouse_movement_lines ERROR:" << query.lastError().text();
+    }
+    if (!query.exec("CREATE INDEX IF NOT EXISTS idx_warehouse_movement_lines_product_id ON warehouse_movement_lines(product_id);")) {
+        qDebug() << "CREATE INDEX warehouse_movement_lines ERROR:" << query.lastError().text();
+    }
 }
