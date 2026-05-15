@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QAbstractTableModel>
+#include <QHash>
 #include <QList>
 
 #include "../stockmovement.h"
@@ -10,6 +11,12 @@ class StockMovementLinesModel : public QAbstractTableModel
     Q_OBJECT
 
 public:
+    struct ProductCatalogItem {
+        QString sku;
+        QString name;
+        QString unit;
+    };
+
     enum Column {
         Product = 0,
         Quantity = 1,
@@ -44,9 +51,12 @@ public:
     void setLines(const QList<StockMovementLine>& lines);
     QList<StockMovementLine> lines() const;
 
+    void setProductCatalog(const QHash<int, ProductCatalogItem>& catalog);
+
     StockMovementLine getLine(int row) const;
     void setLine(int row, const StockMovementLine& line);
 
 private:
     QList<StockMovementLine> m_lines;
+    QHash<int, ProductCatalogItem> m_catalog;
 };

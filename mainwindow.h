@@ -10,6 +10,7 @@ class QSortFilterProxyModel;
 class StockMovementsListModel;
 class StockMovementLinesModel;
 class MovementCardDelegate;
+class ProductComboDelegate;
 enum class MovementType;
 
 QT_BEGIN_NAMESPACE
@@ -55,6 +56,9 @@ private slots:
     void on_warehouseAddLineButton_clicked();
     void on_warehouseRemoveLineButton_clicked();
 
+    void on_warehousePostButton_clicked();
+    void on_warehouseCancelMovementButton_clicked();
+
     void on_warehouseReceiptButton_clicked();
     void on_warehouseIssueButton_clicked();
     void on_warehouseRelocateButton_clicked();
@@ -72,7 +76,10 @@ private:
     StockMovementsListModel* warehouseMovementsModel{nullptr};
     StockMovementLinesModel* warehouseLinesModel{nullptr};
     MovementCardDelegate* warehouseMovementsDelegate{nullptr};
+    ProductComboDelegate* warehouseProductDelegate{nullptr};
     int currentWarehouseMovementId{0};
+    bool warehouseIsEditingNew{false};
+    MovementType currentWarehouseMovementType;
 
     void loadEmployees();
     void loadProducts();
@@ -85,5 +92,8 @@ private:
     void showWarehouseMovement(int movementId);
     void showWarehouseEmpty();
     void startNewWarehouseMovement(MovementType type);
+
+    void refreshWarehouseEmployees();
+    void refreshWarehouseProductCatalog();
 };
 #endif // MAINWINDOW_H

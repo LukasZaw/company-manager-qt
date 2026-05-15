@@ -12,7 +12,7 @@ int ProductTableModel::rowCount(const QModelIndex&) const
 
 int ProductTableModel::columnCount(const QModelIndex&) const
 {
-    return 9; // ID, Nazwa, SKU, Kategoria, Cena, Ilość, Jednostka, Lokalizacja, Opis
+    return 9; // ID, Nazwa, SKU, Kategoria, Cena, Stan, Jednostka, Lokalizacja, Opis
 }
 
 QVariant ProductTableModel::data(const QModelIndex& index, int role) const
@@ -69,7 +69,7 @@ QVariant ProductTableModel::headerData(int section, Qt::Orientation orientation,
     case 4:
         return "Cena";
     case 5:
-        return "Ilość";
+        return "Stan";
     case 6:
         return "Jednostka";
     case 7:

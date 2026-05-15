@@ -24,6 +24,10 @@ ProductDialog::ProductDialog(QWidget* parent)
     ui->priceSpinBox->setMaximum(1e9);
     ui->quantitySpinBox->setDecimals(3);
     ui->quantitySpinBox->setMaximum(1e9);
+
+    // Stock is derived from warehouse movements; not editable here.
+    ui->quantitySpinBox->setEnabled(false);
+    ui->quantitySpinBox->setToolTip(tr("Stan jest liczony z dokumentów magazynowych."));
 }
 
 ProductDialog::~ProductDialog()

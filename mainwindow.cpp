@@ -11,6 +11,7 @@
 #include "src/ui/departmentdialog.h"
 #include "src/ui/categorydialog.h"
 #include "src/ui/movementcarddelegate.h"
+#include "src/ui/productcombodelegate.h"
 #include <QHeaderView>
 #include <QItemSelectionModel>
 #include <QMessageBox>
@@ -117,12 +118,16 @@ void MainWindow::loadEmployees()
 
     employeeModel
         ->setEmployees(employees);
+
+    refreshWarehouseEmployees();
 }
 
 void MainWindow::loadProducts()
 {
     const auto products = ProductService::getAllProducts();
     productModel->setProducts(products);
+
+    refreshWarehouseProductCatalog();
 }
 
 void MainWindow::on_addEmployeeButton_clicked()
@@ -336,24 +341,87 @@ void MainWindow::initWarehouseUi()
     ui->warehouseOccurredAtEdit->setDisplayFormat("yyyy-MM-dd HH:mm");
     ui->warehouseOccurredAtEdit->setCalendarPopup(true);
 
-    // Populate employees list (optional).
-    {
-        const QSignalBlocker blocker(ui->warehouseEmployeeComboBox);
-        ui->warehouseEmployeeComboBox->clear();
-        ui->warehouseEmployeeComboBox->addItem(tr("(brak)"), 0);
-        const auto employees = EmployeeService::getAllEmployees();
-        for (const auto& e : employees) {
-            const QString name = (e.firstName.trimmed() + " " + e.lastName.trimmed()).trimmed();
-            ui->warehouseEmployeeComboBox->addItem(name, e.id);
-        }
-    }
 
-    // Read-only mode by default (until posting UI is implemented).
+    // Delegates/catalogs (refreshed dynamically after changes)
+    warehouseProductDelegate = new ProductComboDelegate(ui->warehouseLinesTableView);
+    ui->warehouseLinesTableView->setItemDelegateForColumn(StockMovementLinesModel::Product, warehouseProductDelegate);
+
+    refreshWarehouseEmployees();
+    refreshWarehouseProductCatalog();
+
+    // Read-only mode by default.
+    warehouseIsEditingNew = false;
     ui->warehousePostButton->setEnabled(false);
     ui->warehouseCancelMovementButton->setEnabled(false);
     ui->warehouseAddLineButton->setEnabled(false);
     ui->warehouseRemoveLineButton->setEnabled(false);
     ui->warehouseLinesTableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+}
+
+void MainWindow::refreshWarehouseEmployees()
+{
+    // Can be called anytime (even before initWarehouseUi), because widgets exist after setupUi.
+    if (!ui || !ui->warehouseEmployeeComboBox)
+        return;
+
+    const int currentId = ui->warehouseEmployeeComboBox->currentData().toInt();
+
+    const QSignalBlocker blocker(ui->warehouseEmployeeComboBox);
+    ui->warehouseEmployeeComboBox->clear();
+    ui->warehouseEmployeeComboBox->addItem(tr("(brak)"), 0);
+
+    const auto employees = EmployeeService::getAllEmployees();
+    for (const auto& e : employees) {
+        const QString name = (e.firstName.trimmed() + " " + e.lastName.trimmed()).trimmed();
+        ui->warehouseEmployeeComboBox->addItem(name, e.id);
+    }
+
+    int idx = 0;
+    if (currentId > 0) {
+        for (int i = 0; i < ui->warehouseEmployeeComboBox->count(); ++i) {
+            if (ui->warehouseEmployeeComboBox->itemData(i).toInt() == currentId) {
+                idx = i;
+                break;
+            }
+        }
+    }
+    ui->warehouseEmployeeComboBox->setCurrentIndex(idx);
+}
+
+void MainWindow::refreshWarehouseProductCatalog()
+{
+    // Only valid after initWarehouseUi() (model/delegate exist).
+    if (!warehouseLinesModel || !warehouseProductDelegate)
+        return;
+
+    QHash<int, StockMovementLinesModel::ProductCatalogItem> catalog;
+    QList<ProductComboDelegate::ProductItem> products;
+
+    const auto allProducts = ProductService::getAllProducts();
+    catalog.reserve(allProducts.size());
+    products.reserve(allProducts.size());
+
+    for (const auto& p : allProducts) {
+        StockMovementLinesModel::ProductCatalogItem item;
+        item.sku = p.sku;
+        item.name = p.name;
+        item.unit = p.unit;
+        catalog.insert(p.id, item);
+
+        ProductComboDelegate::ProductItem pi;
+        pi.id = p.id;
+        pi.sku = p.sku;
+        pi.name = p.name;
+        pi.unit = p.unit;
+        products.append(pi);
+    }
+
+    warehouseLinesModel->setProductCatalog(catalog);
+    warehouseProductDelegate->setProducts(products);
+
+    // Ensure view updates text for any existing rows.
+    if (ui && ui->warehouseLinesTableView)
+        ui->warehouseLinesTableView->viewport()->update();
 }
 
 void MainWindow::loadWarehouseMovements()
@@ -391,6 +459,7 @@ void MainWindow::loadWarehouseMovements()
 void MainWindow::showWarehouseEmpty()
 {
     currentWarehouseMovementId = 0;
+    warehouseIsEditingNew = false;
     ui->warehouseRightStack->setCurrentWidget(ui->warehouseEmptyPage);
     warehouseLinesModel->setLines({});
 
@@ -405,6 +474,12 @@ void MainWindow::showWarehouseEmpty()
     ui->warehouseFromLocationEdit->clear();
     ui->warehouseToLocationEdit->clear();
     ui->warehouseNotesEdit->clear();
+
+    ui->warehousePostButton->setEnabled(false);
+    ui->warehouseCancelMovementButton->setEnabled(false);
+    ui->warehouseAddLineButton->setEnabled(false);
+    ui->warehouseRemoveLineButton->setEnabled(false);
+    ui->warehouseLinesTableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
 }
 
 void MainWindow::showWarehouseMovement(int movementId)
@@ -421,6 +496,7 @@ void MainWindow::showWarehouseMovement(int movementId)
     }
 
     currentWarehouseMovementId = m.id;
+    warehouseIsEditingNew = false;
 
     ui->warehouseRightStack->setCurrentWidget(ui->warehouseDetailsPage);
 
@@ -465,18 +541,26 @@ void MainWindow::showWarehouseMovement(int movementId)
     const auto lines = StockMovementService::getMovementLines(movementId);
     warehouseLinesModel->setLines(lines);
 
-    // Keep details read-only for now.
+    // Read-only view of an existing movement.
     ui->warehousePostButton->setEnabled(false);
-    ui->warehouseCancelMovementButton->setEnabled(false);
     ui->warehouseAddLineButton->setEnabled(false);
     ui->warehouseRemoveLineButton->setEnabled(false);
     ui->warehouseLinesTableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    ui->warehouseCancelMovementButton->setEnabled(!m.canceled);
 }
 
 void MainWindow::startNewWarehouseMovement(MovementType type)
 {
-    Q_UNUSED(type);
-    // UI scaffolding for future posting; keep it read-only until posting flow is implemented.
+    currentWarehouseMovementType = type;
+    warehouseIsEditingNew = true;
+
+    // Clear selection so selectionChanged won't override the edit form.
+    if (ui->warehouseMovementsListView->selectionModel()) {
+        const QSignalBlocker blocker(ui->warehouseMovementsListView->selectionModel());
+        ui->warehouseMovementsListView->selectionModel()->clearSelection();
+        ui->warehouseMovementsListView->setCurrentIndex(QModelIndex());
+    }
+
     ui->warehouseRightStack->setCurrentWidget(ui->warehouseDetailsPage);
     ui->warehouseMovementTitleLabel->setText(QString("%1").arg(movementTypeDisplayName(type)));
     ui->warehouseMovementMetaLabel->setText(tr("Nowy dokument"));
@@ -496,21 +580,107 @@ void MainWindow::startNewWarehouseMovement(MovementType type)
     ui->warehouseToLocationEdit->clear();
     ui->warehouseNotesEdit->clear();
 
-    ui->warehousePostButton->setEnabled(false);
+    ui->warehousePostButton->setEnabled(true);
     ui->warehouseCancelMovementButton->setEnabled(false);
-    ui->warehouseAddLineButton->setEnabled(false);
-    ui->warehouseRemoveLineButton->setEnabled(false);
-    ui->warehouseLinesTableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    ui->warehouseAddLineButton->setEnabled(true);
+    ui->warehouseRemoveLineButton->setEnabled(true);
+    ui->warehouseLinesTableView->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::SelectedClicked | QAbstractItemView::EditKeyPressed);
+
+    // Seed with one empty line for convenience.
+    warehouseLinesModel->setLines({ StockMovementLine{} });
+    ui->warehouseLinesTableView->setCurrentIndex(warehouseLinesModel->index(0, 0));
+    ui->warehouseLinesTableView->edit(warehouseLinesModel->index(0, 0));
 }
 
 void MainWindow::on_warehouseAddLineButton_clicked()
 {
-    // Posting mode not implemented yet.
+    if (!warehouseIsEditingNew)
+        return;
+
+    const int row = warehouseLinesModel->rowCount();
+    if (!warehouseLinesModel->insertRows(row, 1))
+        return;
+
+    const QModelIndex idx = warehouseLinesModel->index(row, 0);
+    ui->warehouseLinesTableView->setCurrentIndex(idx);
+    ui->warehouseLinesTableView->scrollTo(idx);
+    ui->warehouseLinesTableView->edit(idx);
 }
 
 void MainWindow::on_warehouseRemoveLineButton_clicked()
 {
-    // Posting mode not implemented yet.
+    if (!warehouseIsEditingNew)
+        return;
+
+    const QModelIndex idx = ui->warehouseLinesTableView->currentIndex();
+    if (!idx.isValid())
+        return;
+
+    warehouseLinesModel->removeRows(idx.row(), 1);
+}
+
+void MainWindow::on_warehousePostButton_clicked()
+{
+    if (!warehouseIsEditingNew)
+        return;
+
+    StockMovement h;
+    h.type = currentWarehouseMovementType;
+    h.occurredAt = ui->warehouseOccurredAtEdit->dateTime();
+    h.employeeId = ui->warehouseEmployeeComboBox->currentData().toInt();
+    h.fromLocation = ui->warehouseFromLocationEdit->text();
+    h.toLocation = ui->warehouseToLocationEdit->text();
+    h.notes = ui->warehouseNotesEdit->toPlainText();
+
+    const auto lines = warehouseLinesModel->lines();
+    if (lines.isEmpty()) {
+        QMessageBox::warning(this, tr("Błąd"), tr("Dodaj przynajmniej jedną pozycję."));
+        return;
+    }
+
+    for (const auto& l : lines) {
+        if (l.productId <= 0) {
+            QMessageBox::warning(this, tr("Błąd"), tr("Wybierz produkt w każdej pozycji."));
+            return;
+        }
+        if (l.quantity == 0.0) {
+            QMessageBox::warning(this, tr("Błąd"), tr("Ilość nie może być równa 0."));
+            return;
+        }
+    }
+
+    int newId = 0;
+    if (!StockMovementService::postMovement(h, lines, &newId)) {
+        QMessageBox::warning(this, tr("Błąd"), tr("Nie udało się zaksięgować dokumentu. Sprawdź dane oraz stan magazynu."));
+        return;
+    }
+
+    warehouseIsEditingNew = false;
+    currentWarehouseMovementId = newId;
+    loadWarehouseMovements();
+    showWarehouseMovement(newId);
+
+    // Keep Products tab consistent (stock + location come from warehouse history/relocations).
+    loadProducts();
+}
+
+void MainWindow::on_warehouseCancelMovementButton_clicked()
+{
+    if (warehouseIsEditingNew)
+        return;
+    if (currentWarehouseMovementId <= 0)
+        return;
+
+    if (!StockMovementService::cancelMovement(currentWarehouseMovementId)) {
+        QMessageBox::warning(this, tr("Błąd"), tr("Nie udało się anulować dokumentu."));
+        return;
+    }
+
+    loadWarehouseMovements();
+    showWarehouseMovement(currentWarehouseMovementId);
+
+    // Keep Products tab consistent after cancellation.
+    loadProducts();
 }
 
 void MainWindow::on_warehouseReceiptButton_clicked()

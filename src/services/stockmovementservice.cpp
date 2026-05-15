@@ -460,16 +460,126 @@ bool StockMovementService::cancelMovement(int movementId)
     if (movementId <= 0)
         return false;
 
-    QSqlQuery query;
-    query.prepare("UPDATE warehouse_movements SET is_canceled = 1 WHERE id = :id");
-    query.bindValue(":id", movementId);
+    QSqlDatabase db = QSqlDatabase::database();
+    if (!db.isValid() || !db.isOpen())
+        return false;
 
-    if (!query.exec()) {
-        qDebug() << "CANCEL warehouse_movement ERROR:" << query.lastError().text();
+    QString type;
+    QString fromLocation;
+    {
+        QSqlQuery query(db);
+        query.prepare("SELECT type, from_location FROM warehouse_movements WHERE id = :id");
+        query.bindValue(":id", movementId);
+
+        if (!query.exec()) {
+            qDebug() << "SELECT warehouse_movement to cancel ERROR:" << query.lastError().text();
+            return false;
+        }
+        if (!query.next())
+            return false;
+
+        type = query.value("type").toString();
+        fromLocation = query.value("from_location").toString().trimmed();
+    }
+
+    if (!db.transaction()) {
+        qDebug() << "DB transaction ERROR:" << db.lastError().text();
         return false;
     }
 
-    return query.numRowsAffected() > 0;
+    {
+        QSqlQuery query(db);
+        query.prepare("UPDATE warehouse_movements SET is_canceled = 1 WHERE id = :id AND is_canceled = 0");
+        query.bindValue(":id", movementId);
+
+        if (!query.exec()) {
+            qDebug() << "CANCEL warehouse_movement ERROR:" << query.lastError().text();
+            db.rollback();
+            return false;
+        }
+
+        if (query.numRowsAffected() <= 0) {
+            // Already canceled or missing.
+            db.rollback();
+            return false;
+        }
+    }
+
+    // If this was a relocation, it had side-effects on products.location. Cancel should undo those
+    // based on history of non-canceled relocations.
+    if (type == "RELOCATE") {
+        QList<int> productIds;
+        {
+            QSqlQuery query(db);
+            query.prepare("SELECT DISTINCT product_id FROM warehouse_movement_lines WHERE movement_id = :movement_id");
+            query.bindValue(":movement_id", movementId);
+            if (!query.exec()) {
+                qDebug() << "SELECT relocate movement lines ERROR:" << query.lastError().text();
+                db.rollback();
+                return false;
+            }
+
+            while (query.next())
+                productIds.append(query.value(0).toInt());
+        }
+
+        QSqlQuery prevLocQuery(db);
+        prevLocQuery.prepare(
+            "SELECT m.to_location "
+            "FROM warehouse_movements m "
+            "JOIN warehouse_movement_lines l ON l.movement_id = m.id "
+            "WHERE m.type = 'RELOCATE' AND m.is_canceled = 0 AND l.product_id = :product_id "
+            "ORDER BY m.occurred_at DESC, m.id DESC "
+            "LIMIT 1");
+
+        QSqlQuery updateLocQuery(db);
+        updateLocQuery.prepare("UPDATE products SET location = :location WHERE id = :id");
+
+        for (const int productId : productIds) {
+            QString newLocation;
+            bool hasHistory = false;
+
+            prevLocQuery.bindValue(":product_id", productId);
+            if (!prevLocQuery.exec()) {
+                qDebug() << "SELECT previous product location ERROR:" << prevLocQuery.lastError().text();
+                db.rollback();
+                return false;
+            }
+            if (prevLocQuery.next()) {
+                newLocation = prevLocQuery.value(0).toString().trimmed();
+                hasHistory = true;
+            }
+            prevLocQuery.finish();
+
+            updateLocQuery.bindValue(":id", productId);
+
+            if (hasHistory) {
+                if (newLocation.isEmpty())
+                    updateLocQuery.bindValue(":location", QVariant(QVariant::String));
+                else
+                    updateLocQuery.bindValue(":location", newLocation);
+            } else {
+                if (fromLocation.isEmpty())
+                    updateLocQuery.bindValue(":location", QVariant(QVariant::String));
+                else
+                    updateLocQuery.bindValue(":location", fromLocation);
+            }
+
+            if (!updateLocQuery.exec()) {
+                qDebug() << "UPDATE products.location after cancel ERROR:" << updateLocQuery.lastError().text();
+                db.rollback();
+                return false;
+            }
+        }
+    }
+
+    if (!db.commit()) {
+        qDebug() << "DB commit ERROR:" << db.lastError().text();
+        db.rollback();
+        return false;
+    }
+
+    return true;
 }
 
 double StockMovementService::getCurrentStockForProduct(int productId)

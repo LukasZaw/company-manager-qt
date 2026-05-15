@@ -32,21 +32,24 @@ QVariant StockMovementLinesModel::data(const QModelIndex& index, int role) const
 
     const StockMovementLine& l = m_lines[row];
 
+    const ProductCatalogItem catalogItem = m_catalog.contains(l.productId) ? m_catalog.value(l.productId) : ProductCatalogItem{};
+    const QString effectiveSku = !l.sku.trimmed().isEmpty() ? l.sku.trimmed() : catalogItem.sku.trimmed();
+    const QString effectiveName = !l.productName.trimmed().isEmpty() ? l.productName.trimmed() : catalogItem.name.trimmed();
+    const QString effectiveUnit = !l.unit.trimmed().isEmpty() ? l.unit.trimmed() : catalogItem.unit.trimmed();
+
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
         case Product: {
-            const QString sku = l.sku.trimmed();
-            const QString name = l.productName.trimmed();
-            if (!sku.isEmpty() && !name.isEmpty())
-                return QString("%1 — %2").arg(sku, name);
-            if (!sku.isEmpty())
-                return sku;
-            return name;
+            if (!effectiveSku.isEmpty() && !effectiveName.isEmpty())
+                return QString("%1 — %2").arg(effectiveSku, effectiveName);
+            if (!effectiveSku.isEmpty())
+                return effectiveSku;
+            return effectiveName;
         }
         case Quantity:
             return l.quantity;
         case Unit:
-            return l.unit;
+            return effectiveUnit;
         default:
             return {};
         }
@@ -59,7 +62,7 @@ QVariant StockMovementLinesModel::data(const QModelIndex& index, int role) const
         case Quantity:
             return l.quantity;
         case Unit:
-            return l.unit;
+            return effectiveUnit;
         default:
             return {};
         }
@@ -155,7 +158,15 @@ bool StockMovementLinesModel::setData(const QModelIndex& index, const QVariant& 
                 return false;
 
             l.productId = productId;
-            emit dataChanged(index, index, { Qt::DisplayRole, Qt::EditRole, ProductIdRole });
+
+            if (m_catalog.contains(productId)) {
+                const auto ci = m_catalog.value(productId);
+                l.sku = ci.sku;
+                l.productName = ci.name;
+                l.unit = ci.unit;
+            }
+
+            emit dataChanged(this->index(row, 0), this->index(row, ColumnCount - 1), { Qt::DisplayRole, Qt::EditRole, ProductIdRole, SkuRole, ProductNameRole, UnitRole });
             return true;
         }
 
@@ -167,7 +178,15 @@ bool StockMovementLinesModel::setData(const QModelIndex& index, const QVariant& 
         if (productId == l.productId)
             return false;
         l.productId = productId;
-        emit dataChanged(index, index, { Qt::DisplayRole, Qt::EditRole, ProductIdRole });
+
+        if (m_catalog.contains(productId)) {
+            const auto ci = m_catalog.value(productId);
+            l.sku = ci.sku;
+            l.productName = ci.name;
+            l.unit = ci.unit;
+        }
+
+        emit dataChanged(this->index(row, 0), this->index(row, ColumnCount - 1), { Qt::DisplayRole, Qt::EditRole, ProductIdRole, SkuRole, ProductNameRole, UnitRole });
         return true;
     }
 
@@ -226,6 +245,14 @@ void StockMovementLinesModel::setLines(const QList<StockMovementLine>& lines)
     beginResetModel();
     m_lines = lines;
     endResetModel();
+}
+
+void StockMovementLinesModel::setProductCatalog(const QHash<int, ProductCatalogItem>& catalog)
+{
+    m_catalog = catalog;
+    if (!m_lines.isEmpty()) {
+        emit dataChanged(index(0, 0), index(m_lines.size() - 1, ColumnCount - 1), { Qt::DisplayRole, Qt::EditRole });
+    }
 }
 
 QList<StockMovementLine> StockMovementLinesModel::lines() const

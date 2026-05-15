@@ -48,6 +48,8 @@ set(PROJECT_SOURCES
     src/ui/productdialog.ui
     src/ui/movementcarddelegate.h
     src/ui/movementcarddelegate.cpp
+    src/ui/productcombodelegate.h
+    src/ui/productcombodelegate.cpp
     src/models/table/employeetablemodel.h
     src/models/table/employeetablemodel.cpp
     src/models/table/departmenttablemodel.h
