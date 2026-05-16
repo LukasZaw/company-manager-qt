@@ -2,6 +2,7 @@
 #include "ui_productdialog.h"
 
 #include "../services/categoryservice.h"
+#include "locationpickerdialog.h"
 
 #include <QMessageBox>
 
@@ -47,6 +48,7 @@ Product ProductDialog::getProduct() const
     p.price = ui->priceSpinBox->value();
     p.quantity = ui->quantitySpinBox->value();
     p.unit = ui->unitEdit->text();
+    p.locationId = m_locationId;
     p.location = ui->locationEdit->text();
     p.description = ui->descriptionEdit->toPlainText();
 
@@ -76,6 +78,7 @@ void ProductDialog::on_saveButton_clicked()
 void ProductDialog::setProduct(const Product& product)
 {
     m_productId = product.id;
+    m_locationId = product.locationId;
 
     ui->nameEdit->setText(product.name);
     ui->skuEdit->setText(product.sku);
@@ -96,4 +99,20 @@ void ProductDialog::setProduct(const Product& product)
     ui->unitEdit->setText(product.unit);
     ui->locationEdit->setText(product.location);
     ui->descriptionEdit->setPlainText(product.description);
+}
+
+void ProductDialog::on_locationPickButton_clicked()
+{
+    LocationPickerDialog dlg(this);
+    dlg.setCurrentLocationId(m_locationId);
+
+    if (dlg.exec() != QDialog::Accepted)
+        return;
+
+    const int id = dlg.selectedLocationId();
+    if (id <= 0)
+        return;
+
+    m_locationId = id;
+    ui->locationEdit->setText(dlg.selectedLocationPath());
 }

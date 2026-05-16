@@ -491,7 +491,42 @@
                 </widget>
                </item>
                <item row="2" column="1">
-                <widget class="QLineEdit" name="warehouseFromLocationEdit"/>
+                                <widget class="QWidget" name="warehouseFromLocationPickerWidget">
+                                 <layout class="QHBoxLayout" name="warehouseFromLocationPickerLayout">
+                                    <property name="spacing">
+                                     <number>6</number>
+                                    </property>
+                                    <property name="leftMargin">
+                                     <number>0</number>
+                                    </property>
+                                    <property name="topMargin">
+                                     <number>0</number>
+                                    </property>
+                                    <property name="rightMargin">
+                                     <number>0</number>
+                                    </property>
+                                    <property name="bottomMargin">
+                                     <number>0</number>
+                                    </property>
+                                    <item>
+                                     <widget class="QLineEdit" name="warehouseFromLocationEdit">
+                                        <property name="readOnly">
+                                         <bool>true</bool>
+                                        </property>
+                                     </widget>
+                                    </item>
+                                    <item>
+                                     <widget class="QToolButton" name="warehouseFromLocationPickButton">
+                                        <property name="text">
+                                         <string>…</string>
+                                        </property>
+                                        <property name="toolTip">
+                                         <string>Wybierz lokalizację z drzewa</string>
+                                        </property>
+                                     </widget>
+                                    </item>
+                                 </layout>
+                                </widget>
                </item>
                <item row="3" column="0">
                 <widget class="QLabel" name="warehouseToLocationLabel">
@@ -501,7 +536,42 @@
                 </widget>
                </item>
                <item row="3" column="1">
-                <widget class="QLineEdit" name="warehouseToLocationEdit"/>
+                                <widget class="QWidget" name="warehouseToLocationPickerWidget">
+                                 <layout class="QHBoxLayout" name="warehouseToLocationPickerLayout">
+                                    <property name="spacing">
+                                     <number>6</number>
+                                    </property>
+                                    <property name="leftMargin">
+                                     <number>0</number>
+                                    </property>
+                                    <property name="topMargin">
+                                     <number>0</number>
+                                    </property>
+                                    <property name="rightMargin">
+                                     <number>0</number>
+                                    </property>
+                                    <property name="bottomMargin">
+                                     <number>0</number>
+                                    </property>
+                                    <item>
+                                     <widget class="QLineEdit" name="warehouseToLocationEdit">
+                                        <property name="readOnly">
+                                         <bool>true</bool>
+                                        </property>
+                                     </widget>
+                                    </item>
+                                    <item>
+                                     <widget class="QToolButton" name="warehouseToLocationPickButton">
+                                        <property name="text">
+                                         <string>…</string>
+                                        </property>
+                                        <property name="toolTip">
+                                         <string>Wybierz lokalizację z drzewa</string>
+                                        </property>
+                                     </widget>
+                                    </item>
+                                 </layout>
+                                </widget>
                </item>
                <item row="4" column="0">
                 <widget class="QLabel" name="warehouseNotesLabel">

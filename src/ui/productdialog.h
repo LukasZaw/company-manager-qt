@@ -22,10 +22,12 @@ public:
 
 private slots:
     void on_saveButton_clicked();
+    void on_locationPickButton_clicked();
 
 private:
     Ui::ProductDialog* ui;
     int m_productId{0};
+    int m_locationId{0};
 };
 
 #endif // PRODUCTDIALOG_H

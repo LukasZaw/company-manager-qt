@@ -12,6 +12,7 @@ public:
     double price{0.0};
     double quantity{0.0};
     QString unit;
-    QString location;
+    int locationId{0};
+    QString location; // display path from locations table
     QString description;
 };

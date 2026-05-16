@@ -12,9 +12,10 @@ QList<Product> ProductService::getAllProducts()
     if (!query.exec(
             "SELECT p.id, p.name, p.sku, p.category_id, c.name AS category_name, p.price, "
             "       COALESCE(SUM(CASE WHEN (m.is_canceled = 0 AND m.affects_stock = 1) THEN l.quantity ELSE 0 END), 0) AS stock_qty, "
-            "       p.unit, p.location, p.description "
+            "       p.unit, p.location_id, COALESCE(loc.path, '') AS location_path, p.description "
             "FROM products p "
             "LEFT JOIN categories c ON c.id = p.category_id "
+            "LEFT JOIN locations loc ON loc.id = p.location_id "
             "LEFT JOIN warehouse_movement_lines l ON l.product_id = p.id "
             "LEFT JOIN warehouse_movements m ON m.id = l.movement_id "
             "GROUP BY p.id "
@@ -33,7 +34,8 @@ QList<Product> ProductService::getAllProducts()
         p.price = query.value("price").toDouble();
         p.quantity = query.value("stock_qty").toDouble();
         p.unit = query.value("unit").toString();
-        p.location = query.value("location").toString();
+        p.locationId = query.value("location_id").toInt();
+        p.location = query.value("location_path").toString();
         p.description = query.value("description").toString();
         list.append(p);
     }
@@ -51,9 +53,10 @@ Product ProductService::getProductById(int id)
     query.prepare(
         "SELECT p.id, p.name, p.sku, p.category_id, c.name AS category_name, p.price, "
         "       COALESCE(SUM(CASE WHEN (m.is_canceled = 0 AND m.affects_stock = 1) THEN l.quantity ELSE 0 END), 0) AS stock_qty, "
-        "       p.unit, p.location, p.description "
+        "       p.unit, p.location_id, COALESCE(loc.path, '') AS location_path, p.description "
         "FROM products p "
         "LEFT JOIN categories c ON c.id = p.category_id "
+        "LEFT JOIN locations loc ON loc.id = p.location_id "
         "LEFT JOIN warehouse_movement_lines l ON l.product_id = p.id "
         "LEFT JOIN warehouse_movements m ON m.id = l.movement_id "
         "WHERE p.id = :id "
@@ -74,7 +77,8 @@ Product ProductService::getProductById(int id)
         p.price = query.value("price").toDouble();
         p.quantity = query.value("stock_qty").toDouble();
         p.unit = query.value("unit").toString();
-        p.location = query.value("location").toString();
+        p.locationId = query.value("location_id").toInt();
+        p.location = query.value("location_path").toString();
         p.description = query.value("description").toString();
     }
 
@@ -90,15 +94,18 @@ bool ProductService::addProduct(const Product& product)
 
     QSqlQuery query;
     query.prepare(
-        "INSERT INTO products (name, sku, category_id, price, quantity, unit, location, description) "
-        "VALUES (:name, :sku, :category_id, :price, 0, :unit, :location, :description)");
+        "INSERT INTO products (name, sku, category_id, price, quantity, unit, location_id, description) "
+        "VALUES (:name, :sku, :category_id, :price, 0, :unit, :location_id, :description)");
 
     query.bindValue(":name", name);
     query.bindValue(":sku", sku);
     query.bindValue(":category_id", product.categoryId);
     query.bindValue(":price", product.price);
     query.bindValue(":unit", product.unit.trimmed());
-    query.bindValue(":location", product.location.trimmed());
+    if (product.locationId > 0)
+        query.bindValue(":location_id", product.locationId);
+    else
+        query.bindValue(":location_id", QVariant(QVariant::Int));
     query.bindValue(":description", product.description.trimmed());
 
     if (!query.exec()) {
@@ -120,7 +127,7 @@ bool ProductService::updateProduct(const Product& product)
     query.prepare(
         "UPDATE products "
         "SET name = :name, sku = :sku, category_id = :category_id, price = :price, "
-        "unit = :unit, location = :location, description = :description "
+        "unit = :unit, location_id = :location_id, description = :description "
         "WHERE id = :id");
 
     query.bindValue(":name", name);
@@ -128,7 +135,10 @@ bool ProductService::updateProduct(const Product& product)
     query.bindValue(":category_id", product.categoryId);
     query.bindValue(":price", product.price);
     query.bindValue(":unit", product.unit.trimmed());
-    query.bindValue(":location", product.location.trimmed());
+    if (product.locationId > 0)
+        query.bindValue(":location_id", product.locationId);
+    else
+        query.bindValue(":location_id", QVariant(QVariant::Int));
     query.bindValue(":description", product.description.trimmed());
     query.bindValue(":id", product.id);
 

@@ -64,6 +64,9 @@ private slots:
     void on_warehouseRelocateButton_clicked();
     void on_warehouseAdjustButton_clicked();
 
+    void on_warehouseFromLocationPickButton_clicked();
+    void on_warehouseToLocationPickButton_clicked();
+
 private:
     Ui::MainWindow *ui;
     EmployeeTableModel* employeeModel;
@@ -80,6 +83,8 @@ private:
     int currentWarehouseMovementId{0};
     bool warehouseIsEditingNew{false};
     MovementType currentWarehouseMovementType;
+    int warehouseFromLocationId{0};
+    int warehouseToLocationId{0};
 
     void loadEmployees();
     void loadProducts();

@@ -66,6 +66,8 @@ public:
     int employeeId{0};
     QString employeeName; // display name
 
+    int fromLocationId{0};
+    int toLocationId{0};
     QString fromLocation;
     QString toLocation;
 

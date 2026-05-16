@@ -12,6 +12,7 @@
 #include "src/ui/categorydialog.h"
 #include "src/ui/movementcarddelegate.h"
 #include "src/ui/productcombodelegate.h"
+#include "src/ui/locationpickerdialog.h"
 #include <QHeaderView>
 #include <QItemSelectionModel>
 #include <QMessageBox>
@@ -460,6 +461,8 @@ void MainWindow::showWarehouseEmpty()
 {
     currentWarehouseMovementId = 0;
     warehouseIsEditingNew = false;
+    warehouseFromLocationId = 0;
+    warehouseToLocationId = 0;
     ui->warehouseRightStack->setCurrentWidget(ui->warehouseEmptyPage);
     warehouseLinesModel->setLines({});
 
@@ -497,6 +500,8 @@ void MainWindow::showWarehouseMovement(int movementId)
 
     currentWarehouseMovementId = m.id;
     warehouseIsEditingNew = false;
+    warehouseFromLocationId = m.fromLocationId;
+    warehouseToLocationId = m.toLocationId;
 
     ui->warehouseRightStack->setCurrentWidget(ui->warehouseDetailsPage);
 
@@ -553,6 +558,8 @@ void MainWindow::startNewWarehouseMovement(MovementType type)
 {
     currentWarehouseMovementType = type;
     warehouseIsEditingNew = true;
+    warehouseFromLocationId = 0;
+    warehouseToLocationId = 0;
 
     // Clear selection so selectionChanged won't override the edit form.
     if (ui->warehouseMovementsListView->selectionModel()) {
@@ -628,6 +635,8 @@ void MainWindow::on_warehousePostButton_clicked()
     h.type = currentWarehouseMovementType;
     h.occurredAt = ui->warehouseOccurredAtEdit->dateTime();
     h.employeeId = ui->warehouseEmployeeComboBox->currentData().toInt();
+    h.fromLocationId = warehouseFromLocationId;
+    h.toLocationId = warehouseToLocationId;
     h.fromLocation = ui->warehouseFromLocationEdit->text();
     h.toLocation = ui->warehouseToLocationEdit->text();
     h.notes = ui->warehouseNotesEdit->toPlainText();
@@ -701,5 +710,37 @@ void MainWindow::on_warehouseRelocateButton_clicked()
 void MainWindow::on_warehouseAdjustButton_clicked()
 {
     startNewWarehouseMovement(MovementType::Adjust);
+}
+
+void MainWindow::on_warehouseFromLocationPickButton_clicked()
+{
+    LocationPickerDialog dlg(this);
+    dlg.setCurrentLocationId(warehouseFromLocationId);
+
+    if (dlg.exec() != QDialog::Accepted)
+        return;
+
+    const int id = dlg.selectedLocationId();
+    if (id <= 0)
+        return;
+
+    warehouseFromLocationId = id;
+    ui->warehouseFromLocationEdit->setText(dlg.selectedLocationPath());
+}
+
+void MainWindow::on_warehouseToLocationPickButton_clicked()
+{
+    LocationPickerDialog dlg(this);
+    dlg.setCurrentLocationId(warehouseToLocationId);
+
+    if (dlg.exec() != QDialog::Accepted)
+        return;
+
+    const int id = dlg.selectedLocationId();
+    if (id <= 0)
+        return;
+
+    warehouseToLocationId = id;
+    ui->warehouseToLocationEdit->setText(dlg.selectedLocationPath());
 }
 

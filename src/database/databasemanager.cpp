@@ -92,6 +92,29 @@ void DatabaseManager::initialize() {
         qDebug() << "INSERT default category ERROR:" << query.lastError().text();
     }
 
+    const QString createLocations =
+        "CREATE TABLE IF NOT EXISTS locations ("
+        "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+        "parent_id INTEGER,"
+        "name TEXT NOT NULL,"
+        "path TEXT NOT NULL UNIQUE,"
+        "FOREIGN KEY(parent_id) REFERENCES locations(id) ON UPDATE CASCADE ON DELETE RESTRICT"
+        ");";
+
+    if (!query.exec(createLocations)) {
+        qDebug() << "CREATE TABLE locations ERROR:" << query.lastError().text();
+        return;
+    }
+
+    if (!query.exec("CREATE UNIQUE INDEX IF NOT EXISTS ux_locations_parent_name ON locations(parent_id, name);")) {
+        qDebug() << "CREATE INDEX locations ERROR:" << query.lastError().text();
+    }
+
+    // Seed root location (id=1 for convenience)
+    if (!query.exec("INSERT OR IGNORE INTO locations (id, parent_id, name, path) VALUES (1, NULL, 'Magazyn', 'Magazyn');")) {
+        qDebug() << "INSERT default location ERROR:" << query.lastError().text();
+    }
+
     const QString createProducts =
         "CREATE TABLE IF NOT EXISTS products ("
         "id INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -101,9 +124,10 @@ void DatabaseManager::initialize() {
         "price REAL NOT NULL DEFAULT 0,"
         "quantity REAL NOT NULL DEFAULT 0,"
         "unit TEXT,"
-        "location TEXT,"
+        "location_id INTEGER,"
         "description TEXT,"
-        "FOREIGN KEY(category_id) REFERENCES categories(id) ON UPDATE CASCADE ON DELETE RESTRICT"
+        "FOREIGN KEY(category_id) REFERENCES categories(id) ON UPDATE CASCADE ON DELETE RESTRICT,"
+        "FOREIGN KEY(location_id) REFERENCES locations(id) ON UPDATE CASCADE ON DELETE SET NULL"
         ");";
 
     if (!query.exec(createProducts)) {
@@ -118,6 +142,9 @@ void DatabaseManager::initialize() {
     if (!query.exec("CREATE INDEX IF NOT EXISTS idx_products_category_id ON products(category_id);")) {
         qDebug() << "CREATE INDEX products ERROR:" << query.lastError().text();
     }
+    if (!query.exec("CREATE INDEX IF NOT EXISTS idx_products_location_id ON products(location_id);")) {
+        qDebug() << "CREATE INDEX products ERROR:" << query.lastError().text();
+    }
 
     const QString createWarehouseMovements =
         "CREATE TABLE IF NOT EXISTS warehouse_movements ("
@@ -125,12 +152,14 @@ void DatabaseManager::initialize() {
         "type TEXT NOT NULL CHECK (type IN ('RECEIPT','ISSUE','RELOCATE','ADJUST')),"
         "occurred_at TEXT NOT NULL,"
         "employee_id INTEGER,"
-        "from_location TEXT,"
-        "to_location TEXT,"
+        "from_location_id INTEGER,"
+        "to_location_id INTEGER,"
         "notes TEXT,"
         "is_canceled INTEGER NOT NULL DEFAULT 0 CHECK (is_canceled IN (0,1)),"
         "affects_stock INTEGER NOT NULL DEFAULT 1 CHECK (affects_stock IN (0,1)),"
-        "FOREIGN KEY(employee_id) REFERENCES employees(id) ON UPDATE CASCADE ON DELETE SET NULL"
+        "FOREIGN KEY(employee_id) REFERENCES employees(id) ON UPDATE CASCADE ON DELETE SET NULL,"
+        "FOREIGN KEY(from_location_id) REFERENCES locations(id) ON UPDATE CASCADE ON DELETE SET NULL,"
+        "FOREIGN KEY(to_location_id) REFERENCES locations(id) ON UPDATE CASCADE ON DELETE SET NULL"
         ");";
 
     if (!query.exec(createWarehouseMovements)) {
@@ -161,6 +190,12 @@ void DatabaseManager::initialize() {
         qDebug() << "CREATE INDEX warehouse_movements ERROR:" << query.lastError().text();
     }
     if (!query.exec("CREATE INDEX IF NOT EXISTS idx_warehouse_movements_employee_id ON warehouse_movements(employee_id);")) {
+        qDebug() << "CREATE INDEX warehouse_movements ERROR:" << query.lastError().text();
+    }
+    if (!query.exec("CREATE INDEX IF NOT EXISTS idx_warehouse_movements_from_location_id ON warehouse_movements(from_location_id);")) {
+        qDebug() << "CREATE INDEX warehouse_movements ERROR:" << query.lastError().text();
+    }
+    if (!query.exec("CREATE INDEX IF NOT EXISTS idx_warehouse_movements_to_location_id ON warehouse_movements(to_location_id);")) {
         qDebug() << "CREATE INDEX warehouse_movements ERROR:" << query.lastError().text();
     }
 

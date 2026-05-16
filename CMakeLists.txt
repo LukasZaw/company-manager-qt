@@ -23,6 +23,7 @@ set(PROJECT_SOURCES
     src/models/department.h
     src/models/product.h
     src/models/category.h
+    src/models/location.h
         src/models/stockmovement.h
     src/services/employeeservice.h
     src/services/employeeservice.cpp
@@ -32,6 +33,8 @@ set(PROJECT_SOURCES
     src/services/productservice.cpp
     src/services/categoryservice.h
     src/services/categoryservice.cpp
+    src/services/locationservice.h
+    src/services/locationservice.cpp
     src/services/stockmovementservice.h
     src/services/stockmovementservice.cpp
     src/ui/employeedialog.h
@@ -46,6 +49,8 @@ set(PROJECT_SOURCES
     src/ui/productdialog.h
     src/ui/productdialog.cpp
     src/ui/productdialog.ui
+    src/ui/locationpickerdialog.h
+    src/ui/locationpickerdialog.cpp
     src/ui/movementcarddelegate.h
     src/ui/movementcarddelegate.cpp
     src/ui/productcombodelegate.h
@@ -58,6 +63,8 @@ set(PROJECT_SOURCES
     src/models/table/producttablemodel.cpp
     src/models/table/categorytablemodel.h
     src/models/table/categorytablemodel.cpp
+    src/models/table/locationtreemodel.h
+    src/models/table/locationtreemodel.cpp
     src/models/table/stockmovementslistmodel.h
     src/models/table/stockmovementslistmodel.cpp
     src/models/table/stockmovementlinesmodel.h

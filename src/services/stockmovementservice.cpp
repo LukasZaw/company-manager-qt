@@ -26,17 +26,22 @@ QList<StockMovement> StockMovementService::getMovements(const QString& search)
     QString sql =
         "SELECT m.id, m.type, m.occurred_at, m.employee_id, "
         "       COALESCE(e.first_name, '') AS emp_first, COALESCE(e.last_name, '') AS emp_last, "
-        "       m.from_location, m.to_location, m.notes, m.is_canceled, m.affects_stock, "
+        "       COALESCE(m.from_location_id, 0) AS from_location_id, COALESCE(m.to_location_id, 0) AS to_location_id, "
+        "       COALESCE(lf.path, '') AS from_location, COALESCE(lt.path, '') AS to_location, "
+        "       m.notes, m.is_canceled, m.affects_stock, "
         "       (SELECT COUNT(1) FROM warehouse_movement_lines l WHERE l.movement_id = m.id) AS lines_count "
         "FROM warehouse_movements m "
         "LEFT JOIN employees e ON e.id = m.employee_id ";
+
+    sql += "LEFT JOIN locations lf ON lf.id = m.from_location_id ";
+    sql += "LEFT JOIN locations lt ON lt.id = m.to_location_id ";
 
     if (!like.isEmpty()) {
         sql +=
             "WHERE (m.notes LIKE :like "
             "   OR m.type LIKE :like "
-            "   OR m.from_location LIKE :like "
-            "   OR m.to_location LIKE :like "
+            "   OR COALESCE(lf.path, '') LIKE :like "
+            "   OR COALESCE(lt.path, '') LIKE :like "
             "   OR (e.first_name || ' ' || e.last_name) LIKE :like "
             "   OR EXISTS (SELECT 1 "
             "              FROM warehouse_movement_lines l "
@@ -68,6 +73,8 @@ QList<StockMovement> StockMovementService::getMovements(const QString& search)
         const QString full = (first + " " + last).trimmed();
         m.employeeName = full;
 
+        m.fromLocationId = query.value("from_location_id").toInt();
+        m.toLocationId = query.value("to_location_id").toInt();
         m.fromLocation = query.value("from_location").toString();
         m.toLocation = query.value("to_location").toString();
         m.notes = query.value("notes").toString();
@@ -91,17 +98,21 @@ QList<StockMovement> StockMovementService::getMovementsByType(MovementType type,
     QString sql =
         "SELECT m.id, m.type, m.occurred_at, m.employee_id, "
         "       COALESCE(e.first_name, '') AS emp_first, COALESCE(e.last_name, '') AS emp_last, "
-        "       m.from_location, m.to_location, m.notes, m.is_canceled, m.affects_stock, "
+        "       COALESCE(m.from_location_id, 0) AS from_location_id, COALESCE(m.to_location_id, 0) AS to_location_id, "
+        "       COALESCE(lf.path, '') AS from_location, COALESCE(lt.path, '') AS to_location, "
+        "       m.notes, m.is_canceled, m.affects_stock, "
         "       (SELECT COUNT(1) FROM warehouse_movement_lines l WHERE l.movement_id = m.id) AS lines_count "
         "FROM warehouse_movements m "
         "LEFT JOIN employees e ON e.id = m.employee_id "
+        "LEFT JOIN locations lf ON lf.id = m.from_location_id "
+        "LEFT JOIN locations lt ON lt.id = m.to_location_id "
         "WHERE m.type = :type ";
 
     if (!like.isEmpty()) {
         sql +=
             "AND (m.notes LIKE :like "
-            "  OR m.from_location LIKE :like "
-            "  OR m.to_location LIKE :like "
+            "  OR COALESCE(lf.path, '') LIKE :like "
+            "  OR COALESCE(lt.path, '') LIKE :like "
             "  OR (e.first_name || ' ' || e.last_name) LIKE :like "
             "  OR EXISTS (SELECT 1 "
             "             FROM warehouse_movement_lines l "
@@ -134,6 +145,8 @@ QList<StockMovement> StockMovementService::getMovementsByType(MovementType type,
         const QString full = (first + " " + last).trimmed();
         m.employeeName = full;
 
+        m.fromLocationId = query.value("from_location_id").toInt();
+        m.toLocationId = query.value("to_location_id").toInt();
         m.fromLocation = query.value("from_location").toString();
         m.toLocation = query.value("to_location").toString();
         m.notes = query.value("notes").toString();
@@ -157,10 +170,14 @@ StockMovement StockMovementService::getMovementById(int id)
     query.prepare(
         "SELECT m.id, m.type, m.occurred_at, m.employee_id, "
         "       COALESCE(e.first_name, '') AS emp_first, COALESCE(e.last_name, '') AS emp_last, "
-        "       m.from_location, m.to_location, m.notes, m.is_canceled, m.affects_stock, "
+        "       COALESCE(m.from_location_id, 0) AS from_location_id, COALESCE(m.to_location_id, 0) AS to_location_id, "
+        "       COALESCE(lf.path, '') AS from_location, COALESCE(lt.path, '') AS to_location, "
+        "       m.notes, m.is_canceled, m.affects_stock, "
         "       (SELECT COUNT(1) FROM warehouse_movement_lines l WHERE l.movement_id = m.id) AS lines_count "
         "FROM warehouse_movements m "
         "LEFT JOIN employees e ON e.id = m.employee_id "
+        "LEFT JOIN locations lf ON lf.id = m.from_location_id "
+        "LEFT JOIN locations lt ON lt.id = m.to_location_id "
         "WHERE m.id = :id");
     query.bindValue(":id", id);
 
@@ -181,6 +198,8 @@ StockMovement StockMovementService::getMovementById(int id)
     const QString last = query.value("emp_last").toString().trimmed();
     m.employeeName = (first + " " + last).trimmed();
 
+    m.fromLocationId = query.value("from_location_id").toInt();
+    m.toLocationId = query.value("to_location_id").toInt();
     m.fromLocation = query.value("from_location").toString();
     m.toLocation = query.value("to_location").toString();
     m.notes = query.value("notes").toString();
@@ -329,7 +348,7 @@ bool StockMovementService::postMovement(const StockMovement& header, const QList
     // Type-specific sanity checks
     if (h.type == MovementType::Relocate) {
         h.affectsStock = false;
-        if (h.toLocation.isEmpty())
+        if (h.toLocationId <= 0)
             return false;
     } else {
         h.affectsStock = true;
@@ -362,8 +381,8 @@ bool StockMovementService::postMovement(const StockMovement& header, const QList
     {
         QSqlQuery query(db);
         query.prepare(
-            "INSERT INTO warehouse_movements (type, occurred_at, employee_id, from_location, to_location, notes, is_canceled, affects_stock) "
-            "VALUES (:type, :occurred_at, :employee_id, :from_location, :to_location, :notes, 0, :affects_stock)");
+            "INSERT INTO warehouse_movements (type, occurred_at, employee_id, from_location_id, to_location_id, notes, is_canceled, affects_stock) "
+            "VALUES (:type, :occurred_at, :employee_id, :from_location_id, :to_location_id, :notes, 0, :affects_stock)");
 
         query.bindValue(":type", movementTypeToDbString(h.type));
         query.bindValue(":occurred_at", h.occurredAt.toString(Qt::ISODate));
@@ -373,15 +392,15 @@ bool StockMovementService::postMovement(const StockMovement& header, const QList
         else
             query.bindValue(":employee_id", QVariant(QVariant::Int));
 
-        if (h.fromLocation.isEmpty())
-            query.bindValue(":from_location", QVariant(QVariant::String));
+        if (h.fromLocationId > 0)
+            query.bindValue(":from_location_id", h.fromLocationId);
         else
-            query.bindValue(":from_location", h.fromLocation);
+            query.bindValue(":from_location_id", QVariant(QVariant::Int));
 
-        if (h.toLocation.isEmpty())
-            query.bindValue(":to_location", QVariant(QVariant::String));
+        if (h.toLocationId > 0)
+            query.bindValue(":to_location_id", h.toLocationId);
         else
-            query.bindValue(":to_location", h.toLocation);
+            query.bindValue(":to_location_id", QVariant(QVariant::Int));
 
         if (h.notes.isEmpty())
             query.bindValue(":notes", QVariant(QVariant::String));
@@ -429,14 +448,14 @@ bool StockMovementService::postMovement(const StockMovement& header, const QList
             uniqueProducts.insert(l.productId);
 
         QSqlQuery query(db);
-        query.prepare("UPDATE products SET location = :location WHERE id = :id");
+        query.prepare("UPDATE products SET location_id = :location_id WHERE id = :id");
 
         for (const int productId : uniqueProducts) {
-            query.bindValue(":location", h.toLocation);
+            query.bindValue(":location_id", h.toLocationId);
             query.bindValue(":id", productId);
 
             if (!query.exec()) {
-                qDebug() << "UPDATE products.location ERROR:" << query.lastError().text();
+                qDebug() << "UPDATE products.location_id ERROR:" << query.lastError().text();
                 db.rollback();
                 return false;
             }
@@ -465,10 +484,10 @@ bool StockMovementService::cancelMovement(int movementId)
         return false;
 
     QString type;
-    QString fromLocation;
+    int fromLocationId = 0;
     {
         QSqlQuery query(db);
-        query.prepare("SELECT type, from_location FROM warehouse_movements WHERE id = :id");
+        query.prepare("SELECT type, COALESCE(from_location_id, 0) AS from_location_id FROM warehouse_movements WHERE id = :id");
         query.bindValue(":id", movementId);
 
         if (!query.exec()) {
@@ -479,7 +498,7 @@ bool StockMovementService::cancelMovement(int movementId)
             return false;
 
         type = query.value("type").toString();
-        fromLocation = query.value("from_location").toString().trimmed();
+        fromLocationId = query.value("from_location_id").toInt();
     }
 
     if (!db.transaction()) {
@@ -525,7 +544,7 @@ bool StockMovementService::cancelMovement(int movementId)
 
         QSqlQuery prevLocQuery(db);
         prevLocQuery.prepare(
-            "SELECT m.to_location "
+            "SELECT COALESCE(m.to_location_id, 0) AS to_location_id "
             "FROM warehouse_movements m "
             "JOIN warehouse_movement_lines l ON l.movement_id = m.id "
             "WHERE m.type = 'RELOCATE' AND m.is_canceled = 0 AND l.product_id = :product_id "
@@ -533,10 +552,10 @@ bool StockMovementService::cancelMovement(int movementId)
             "LIMIT 1");
 
         QSqlQuery updateLocQuery(db);
-        updateLocQuery.prepare("UPDATE products SET location = :location WHERE id = :id");
+        updateLocQuery.prepare("UPDATE products SET location_id = :location_id WHERE id = :id");
 
         for (const int productId : productIds) {
-            QString newLocation;
+            int newLocationId = 0;
             bool hasHistory = false;
 
             prevLocQuery.bindValue(":product_id", productId);
@@ -546,7 +565,7 @@ bool StockMovementService::cancelMovement(int movementId)
                 return false;
             }
             if (prevLocQuery.next()) {
-                newLocation = prevLocQuery.value(0).toString().trimmed();
+                newLocationId = prevLocQuery.value(0).toInt();
                 hasHistory = true;
             }
             prevLocQuery.finish();
@@ -554,19 +573,19 @@ bool StockMovementService::cancelMovement(int movementId)
             updateLocQuery.bindValue(":id", productId);
 
             if (hasHistory) {
-                if (newLocation.isEmpty())
-                    updateLocQuery.bindValue(":location", QVariant(QVariant::String));
+                if (newLocationId > 0)
+                    updateLocQuery.bindValue(":location_id", newLocationId);
                 else
-                    updateLocQuery.bindValue(":location", newLocation);
+                    updateLocQuery.bindValue(":location_id", QVariant(QVariant::Int));
             } else {
-                if (fromLocation.isEmpty())
-                    updateLocQuery.bindValue(":location", QVariant(QVariant::String));
+                if (fromLocationId > 0)
+                    updateLocQuery.bindValue(":location_id", fromLocationId);
                 else
-                    updateLocQuery.bindValue(":location", fromLocation);
+                    updateLocQuery.bindValue(":location_id", QVariant(QVariant::Int));
             }
 
             if (!updateLocQuery.exec()) {
-                qDebug() << "UPDATE products.location after cancel ERROR:" << updateLocQuery.lastError().text();
+                qDebug() << "UPDATE products.location_id after cancel ERROR:" << updateLocQuery.lastError().text();
                 db.rollback();
                 return false;
             }
