@@ -13,6 +13,8 @@
 #include "src/ui/movementcarddelegate.h"
 #include "src/ui/productcombodelegate.h"
 #include "src/ui/locationpickerdialog.h"
+#include "src/ui/locationmanagerdialog.h"
+#include "src/services/locationservice.h"
 #include <QHeaderView>
 #include <QItemSelectionModel>
 #include <QMessageBox>
@@ -303,6 +305,29 @@ void MainWindow::on_actionCategories_triggered()
 
     // Categories may have changed - refresh products view to update category names.
     loadProducts();
+}
+
+void MainWindow::on_actionLocations_triggered()
+{
+    LocationManagerDialog dialog(this);
+    dialog.exec();
+
+    // Locations may have changed - refresh views that display location paths.
+    loadProducts();
+    loadWarehouseMovements();
+
+    if (warehouseIsEditingNew) {
+        if (warehouseFromLocationId > 0)
+            ui->warehouseFromLocationEdit->setText(LocationService::getPathById(warehouseFromLocationId));
+        if (warehouseToLocationId > 0)
+            ui->warehouseToLocationEdit->setText(LocationService::getPathById(warehouseToLocationId));
+        return;
+    }
+
+    if (currentWarehouseMovementId > 0)
+        showWarehouseMovement(currentWarehouseMovementId);
+    else
+        showWarehouseEmpty();
 }
 
 void MainWindow::initWarehouseUi()

@@ -53,6 +53,8 @@ private slots:
 
     void on_actionCategories_triggered();
 
+    void on_actionLocations_triggered();
+
     void on_warehouseAddLineButton_clicked();
     void on_warehouseRemoveLineButton_clicked();
 

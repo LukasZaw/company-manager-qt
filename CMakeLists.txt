@@ -51,6 +51,8 @@ set(PROJECT_SOURCES
     src/ui/productdialog.ui
     src/ui/locationpickerdialog.h
     src/ui/locationpickerdialog.cpp
+    src/ui/locationmanagerdialog.h
+    src/ui/locationmanagerdialog.cpp
     src/ui/movementcarddelegate.h
     src/ui/movementcarddelegate.cpp
     src/ui/productcombodelegate.h
