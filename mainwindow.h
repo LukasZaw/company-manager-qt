@@ -6,6 +6,8 @@
 #include "src/models/table/producttablemodel.h"
 
 class CurrentStockReportModel;
+class ReceiptsHistoryReportModel;
+class EmployeesListReportModel;
 
 class QModelIndex;
 class QSortFilterProxyModel;
@@ -73,6 +75,8 @@ private slots:
 
     void on_reportsListWidget_currentRowChanged(int currentRow);
     void on_exportCurrentStockCsvButton_clicked();
+    void on_exportReceiptsHistoryCsvButton_clicked();
+    void on_exportEmployeesListCsvButton_clicked();
 
 private:
     Ui::MainWindow *ui;
@@ -95,6 +99,8 @@ private:
 
     // Reports
     CurrentStockReportModel* currentStockReportModel{nullptr};
+    ReceiptsHistoryReportModel* receiptsHistoryReportModel{nullptr};
+    EmployeesListReportModel* employeesListReportModel{nullptr};
 
     void loadEmployees();
     void loadProducts();

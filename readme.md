@@ -87,11 +87,10 @@ Desktopowa aplikacja napisana w C++ z wykorzystaniem frameworka Qt, służąca d
 
 ## 4. Raporty i zestawienia
 
-- [ ] Aktualny stan magazynu
-- [ ] Historia przyjęć
+- [x] Aktualny stan magazynu
+- [x] Historia przyjęć
 
-- [ ] Lista pracowników
-- [ ] Pracownicy według działów
+- [x] Lista pracowników
 
 ## Architektura aplikacji
 

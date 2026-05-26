@@ -16,6 +16,8 @@
 #include "src/ui/locationmanagerdialog.h"
 #include "src/services/locationservice.h"
 #include "src/models/table/currentstockreportmodel.h"
+#include "src/models/table/receiptshistoryreportmodel.h"
+#include "src/models/table/employeeslistreportmodel.h"
 #include <QHeaderView>
 #include <QItemSelectionModel>
 #include <QMessageBox>
@@ -409,14 +411,13 @@ void MainWindow::initReportsUi()
     currentStockItem->setData(Qt::UserRole, 0); // page index
     ui->reportsListWidget->addItem(currentStockItem);
 
-    auto* receiptsHistoryItem = new QListWidgetItem(tr("Historia przyjęć (wkrótce)"));
-    receiptsHistoryItem->setData(Qt::UserRole, 1);
-    receiptsHistoryItem->setFlags(receiptsHistoryItem->flags() & ~Qt::ItemIsEnabled);
+    auto* receiptsHistoryItem = new QListWidgetItem(tr("Historia przyjęć"));
+    receiptsHistoryItem->setData(Qt::UserRole, 1); // page index
     ui->reportsListWidget->addItem(receiptsHistoryItem);
 
     auto* employeesListItem = new QListWidgetItem(tr("Lista pracowników (wkrótce)"));
-    employeesListItem->setData(Qt::UserRole, 1);
-    employeesListItem->setFlags(employeesListItem->flags() & ~Qt::ItemIsEnabled);
+    employeesListItem->setData(Qt::UserRole, 2);
+    employeesListItem->setText(tr("Lista pracowników"));
     ui->reportsListWidget->addItem(employeesListItem);
 
     // Right: current stock preview
@@ -426,6 +427,22 @@ void MainWindow::initReportsUi()
     ui->currentStockTableView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->currentStockTableView->horizontalHeader()->setStretchLastSection(true);
     ui->currentStockTableView->setSortingEnabled(false);
+
+    // Right: receipts history preview
+    receiptsHistoryReportModel = new ReceiptsHistoryReportModel(this);
+    ui->receiptsHistoryTableView->setModel(receiptsHistoryReportModel);
+    ui->receiptsHistoryTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->receiptsHistoryTableView->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->receiptsHistoryTableView->horizontalHeader()->setStretchLastSection(true);
+    ui->receiptsHistoryTableView->setSortingEnabled(false);
+
+    // Right: employees list preview
+    employeesListReportModel = new EmployeesListReportModel(this);
+    ui->employeesListTableView->setModel(employeesListReportModel);
+    ui->employeesListTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->employeesListTableView->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->employeesListTableView->horizontalHeader()->setStretchLastSection(true);
+    ui->employeesListTableView->setSortingEnabled(false);
 
     ui->reportsStackedWidget->setCurrentIndex(0);
     ui->reportsListWidget->setCurrentRow(0);
@@ -445,6 +462,12 @@ void MainWindow::on_reportsListWidget_currentRowChanged(int currentRow)
 
     if (pageIndex == 0 && currentStockReportModel)
         currentStockReportModel->reload();
+
+    if (pageIndex == 1 && receiptsHistoryReportModel)
+        receiptsHistoryReportModel->reload();
+
+    if (pageIndex == 2 && employeesListReportModel)
+        employeesListReportModel->reload();
 }
 
 void MainWindow::on_exportCurrentStockCsvButton_clicked()
@@ -477,6 +500,8 @@ void MainWindow::on_exportCurrentStockCsvButton_clicked()
     QTextStream out(&f);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     out.setEncoding(QStringConverter::Utf8);
+#else
+    out.setCodec("UTF-8");
 #endif
 
     out << "SKU;Produkt;Stan;Jedn.;Lokalizacja\n";
@@ -489,6 +514,123 @@ void MainWindow::on_exportCurrentStockCsvButton_clicked()
             << csvEscape(qty) << ';'
             << csvEscape(p.unit) << ';'
             << csvEscape(p.location) << "\n";
+    }
+
+    out.flush();
+    f.close();
+
+    QMessageBox::information(this, tr("Gotowe"), tr("Zapisano raport do pliku CSV."));
+}
+
+void MainWindow::on_exportReceiptsHistoryCsvButton_clicked()
+{
+    if (!receiptsHistoryReportModel)
+        return;
+
+    receiptsHistoryReportModel->reload();
+    const auto rows = receiptsHistoryReportModel->rows();
+
+    const QString suggested = QString("historia_przyjec_%1.csv").arg(QDateTime::currentDateTime().toString("yyyy-MM-dd"));
+    const QString filePath = QFileDialog::getSaveFileName(
+        this,
+        tr("Eksportuj CSV"),
+        suggested,
+        tr("CSV (*.csv)"));
+
+    if (filePath.trimmed().isEmpty())
+        return;
+
+    QFile f(filePath);
+    if (!f.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        QMessageBox::warning(this, tr("Błąd"), tr("Nie udało się zapisać pliku."));
+        return;
+    }
+
+    // UTF-8 BOM (helps Excel on Windows)
+    f.write("\xEF\xBB\xBF", 3);
+
+    QTextStream out(&f);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    out.setEncoding(QStringConverter::Utf8);
+#else
+    out.setCodec("UTF-8");
+#endif
+
+    out << "Data;Dok.;Pracownik;SKU;Produkt;Ilość;Jedn.;Lokalizacja;Uwagi;Anulowane\n";
+
+    const QLocale loc;
+    for (const auto& r : rows) {
+        const QString dt = r.occurredAt.isValid() ? r.occurredAt.toString("yyyy-MM-dd HH:mm") : QString();
+        const QString qty = loc.toString(r.quantity);
+
+        out << csvEscape(dt) << ';'
+            << csvEscape(QString::number(r.movementId)) << ';'
+            << csvEscape(r.employee) << ';'
+            << csvEscape(r.sku) << ';'
+            << csvEscape(r.product) << ';'
+            << csvEscape(qty) << ';'
+            << csvEscape(r.unit) << ';'
+            << csvEscape(r.toLocation) << ';'
+            << csvEscape(r.notes) << ';'
+            << csvEscape(r.canceled ? QStringLiteral("Tak") : QStringLiteral("Nie")) << "\n";
+    }
+
+    out.flush();
+    f.close();
+
+    QMessageBox::information(this, tr("Gotowe"), tr("Zapisano raport do pliku CSV."));
+}
+
+void MainWindow::on_exportEmployeesListCsvButton_clicked()
+{
+    if (!employeesListReportModel)
+        return;
+
+    employeesListReportModel->reload();
+    const auto employees = employeesListReportModel->employees();
+
+    const QString suggested = QString("lista_pracownikow_%1.csv").arg(QDateTime::currentDateTime().toString("yyyy-MM-dd"));
+    const QString filePath = QFileDialog::getSaveFileName(
+        this,
+        tr("Eksportuj CSV"),
+        suggested,
+        tr("CSV (*.csv)"));
+
+    if (filePath.trimmed().isEmpty())
+        return;
+
+    QFile f(filePath);
+    if (!f.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        QMessageBox::warning(this, tr("Błąd"), tr("Nie udało się zapisać pliku."));
+        return;
+    }
+
+    // UTF-8 BOM (helps Excel on Windows)
+    f.write("\xEF\xBB\xBF", 3);
+
+    QTextStream out(&f);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    out.setEncoding(QStringConverter::Utf8);
+#else
+    out.setCodec("UTF-8");
+#endif
+
+    out << "ID;Imię;Nazwisko;Email;Telefon;Stanowisko;Dział;Data zatrudnienia;Status;Notatki\n";
+
+    for (const auto& e : employees) {
+        const QString hire = e.hireDate.isValid() ? e.hireDate.toString("yyyy-MM-dd") : QString();
+        const QString status = e.active ? QStringLiteral("Aktywny") : QStringLiteral("Nieaktywny");
+
+        out << csvEscape(QString::number(e.id)) << ';'
+            << csvEscape(e.firstName) << ';'
+            << csvEscape(e.lastName) << ';'
+            << csvEscape(e.email) << ';'
+            << csvEscape(e.phone) << ';'
+            << csvEscape(e.position) << ';'
+            << csvEscape(e.department) << ';'
+            << csvEscape(hire) << ';'
+            << csvEscape(status) << ';'
+            << csvEscape(e.notes) << "\n";
     }
 
     out.flush();
