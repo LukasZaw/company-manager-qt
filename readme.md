@@ -4,11 +4,11 @@
 
 Desktopowa aplikacja napisana w C++ z wykorzystaniem frameworka Qt, służąca do kompleksowego zarządzania firmą. System umożliwia zarządzanie pracownikami, produktami oraz magazynem, a także generowanie raportów i zestawień.
 
-# Główne funkcjonalności
+## Główne funkcjonalności
 
 ## 1. Zarządzanie pracownikami
 
-### Funkcje
+### Funkcje (Pracownicy)
 
 - [x] Dodawanie pracownika
 - [x] Edytowanie danych pracownika
@@ -33,7 +33,7 @@ Desktopowa aplikacja napisana w C++ z wykorzystaniem frameworka Qt, służąca d
 
 ## 2. Zarządzanie produktami
 
-### Funkcje
+### Funkcje (Produkty)
 
 - [x] Dodawanie produktu
 - [x] Edytowanie produktu
@@ -58,7 +58,7 @@ Desktopowa aplikacja napisana w C++ z wykorzystaniem frameworka Qt, służąca d
 
 ## 3. Zarządzanie magazynem
 
-### Funkcje
+### Funkcje (Magazyn)
 
 - [x] Rejestrowanie przyjęć produktów
 - [x] Rejestrowanie wydań produktów
@@ -93,7 +93,7 @@ Desktopowa aplikacja napisana w C++ z wykorzystaniem frameworka Qt, służąca d
 - [ ] Lista pracowników
 - [ ] Pracownicy według działów
 
-# Architektura aplikacji
+## Architektura aplikacji
 
 Aplikacja oparta o architekturę MVC:
 
@@ -101,11 +101,11 @@ Aplikacja oparta o architekturę MVC:
 - View — interfejs Qt (QWidget / QMainWindow)
 - Controller — logika aplikacji
 
-# Baza danych
+## Baza danych
 
 SQLite (Qt SQL)
 
-# Interfejs użytkownika
+## Interfejs użytkownika
 
 ## Główne okno
 
@@ -121,17 +121,17 @@ SQLite (Qt SQL)
 - Magazyn
 - Raporty
 
-# Technologie
+## Technologie
 
 - C++
-- Qt 5
+- Qt 6
 - Qt Widgets
 - Qt Designer
 - Qt SQL
 - SQLite
 - Model/View (QTableView)
 
-# Przyszłe rozszerzenia
+## Przyszłe rozszerzenia
 
 - Logowanie użytkowników
 - Role użytkowników
@@ -141,23 +141,21 @@ SQLite (Qt SQL)
 - Dashboard
 - Powiadomienia
 
-# Wymagania
+## Wymagania
 
-- Qt 5.15+
+- Qt 6.5+ (projekt rozwijany na Qt 6)
 - Kompilator C++17
-- CMake lub qmake
+- CMake
 
-# Budowanie projektu (CMake)
+## Budowanie projektu (CMake)
 
-```
-mkdir build
-cd build
-cmake ..
-make
+```sh
+cmake -S . -B build
+cmake --build build
 ```
 
 ---
 
-# Autor
+## Autor
 
 Projekt edukacyjny – github.com/lukaszaw
