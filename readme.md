@@ -41,8 +41,8 @@ Desktopowa aplikacja napisana w C++ z wykorzystaniem frameworka Qt, służąca d
 - [x] Lista produktów
 - [x] Wyszukiwanie produktów
 - [x] Filtrowanie produktów
-- [ ] Przypisywanie produktu do lokalizacji
-- [ ] Śledzenie stanu magazynowego
+- [x] Przypisywanie produktu do lokalizacji
+- [x] Śledzenie stanu magazynowego
 
 ### Dane produktu
 
@@ -64,7 +64,7 @@ Desktopowa aplikacja napisana w C++ z wykorzystaniem frameworka Qt, służąca d
 - [x] Rejestrowanie wydań produktów
 - [x] Historia operacji magazynowych
 - [x] Aktualizacja stanów magazynowych
-- [ ] Przenoszenie produktów między lokalizacjami
+- [x] Przenoszenie produktów między lokalizacjami
 
 ### Operacje magazynowe
 
@@ -87,25 +87,11 @@ Desktopowa aplikacja napisana w C++ z wykorzystaniem frameworka Qt, służąca d
 
 ## 4. Raporty i zestawienia
 
-### Raporty magazynowe
+- [ ] Aktualny stan magazynu
+- [ ] Historia przyjęć
 
-- Aktualny stan magazynu
-- Lista produktów poniżej minimalnego stanu
-- Historia przyjęć
-- Historia wydań
-- Ruch magazynowy
-
-### Raporty pracowników
-
-- Lista pracowników
-- Pracownicy według działów
-- Przypisanie do zadań
-- Aktywność pracowników
-
-### Możliwości eksportu
-
-- Export do CSV
-- Export do JSON
+- [ ] Lista pracowników
+- [ ] Pracownicy według działów
 
 # Architektura aplikacji
 
