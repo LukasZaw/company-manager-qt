@@ -303,7 +303,6 @@ void MainWindow::on_actionCategories_triggered()
     CategoryDialog dialog(this);
     dialog.exec();
 
-    // Categories may have changed - refresh products view to update category names.
     loadProducts();
 }
 
@@ -312,7 +311,6 @@ void MainWindow::on_actionLocations_triggered()
     LocationManagerDialog dialog(this);
     dialog.exec();
 
-    // Locations may have changed - refresh views that display location paths.
     loadProducts();
     loadWarehouseMovements();
 
@@ -367,15 +365,12 @@ void MainWindow::initWarehouseUi()
     ui->warehouseOccurredAtEdit->setDisplayFormat("yyyy-MM-dd HH:mm");
     ui->warehouseOccurredAtEdit->setCalendarPopup(true);
 
-
-    // Delegates/catalogs (refreshed dynamically after changes)
     warehouseProductDelegate = new ProductComboDelegate(ui->warehouseLinesTableView);
     ui->warehouseLinesTableView->setItemDelegateForColumn(StockMovementLinesModel::Product, warehouseProductDelegate);
 
     refreshWarehouseEmployees();
     refreshWarehouseProductCatalog();
 
-    // Read-only mode by default.
     warehouseIsEditingNew = false;
     ui->warehousePostButton->setEnabled(false);
     ui->warehouseCancelMovementButton->setEnabled(false);
@@ -386,7 +381,6 @@ void MainWindow::initWarehouseUi()
 
 void MainWindow::refreshWarehouseEmployees()
 {
-    // Can be called anytime (even before initWarehouseUi), because widgets exist after setupUi.
     if (!ui || !ui->warehouseEmployeeComboBox)
         return;
 
@@ -416,7 +410,6 @@ void MainWindow::refreshWarehouseEmployees()
 
 void MainWindow::refreshWarehouseProductCatalog()
 {
-    // Only valid after initWarehouseUi() (model/delegate exist).
     if (!warehouseLinesModel || !warehouseProductDelegate)
         return;
 
@@ -445,7 +438,6 @@ void MainWindow::refreshWarehouseProductCatalog()
     warehouseLinesModel->setProductCatalog(catalog);
     warehouseProductDelegate->setProducts(products);
 
-    // Ensure view updates text for any existing rows.
     if (ui && ui->warehouseLinesTableView)
         ui->warehouseLinesTableView->viewport()->update();
 }
@@ -457,7 +449,6 @@ void MainWindow::loadWarehouseMovements()
 
     warehouseMovementsModel->setMovements(movements);
 
-    // Try to preserve selection.
     int rowToSelect = -1;
     if (currentWarehouseMovementId > 0) {
         for (int row = 0; row < movements.size(); ++row) {
@@ -571,7 +562,6 @@ void MainWindow::showWarehouseMovement(int movementId)
     const auto lines = StockMovementService::getMovementLines(movementId);
     warehouseLinesModel->setLines(lines);
 
-    // Read-only view of an existing movement.
     ui->warehousePostButton->setEnabled(false);
     ui->warehouseAddLineButton->setEnabled(false);
     ui->warehouseRemoveLineButton->setEnabled(false);
@@ -586,7 +576,6 @@ void MainWindow::startNewWarehouseMovement(MovementType type)
     warehouseFromLocationId = 0;
     warehouseToLocationId = 0;
 
-    // Clear selection so selectionChanged won't override the edit form.
     if (ui->warehouseMovementsListView->selectionModel()) {
         const QSignalBlocker blocker(ui->warehouseMovementsListView->selectionModel());
         ui->warehouseMovementsListView->selectionModel()->clearSelection();
@@ -618,7 +607,6 @@ void MainWindow::startNewWarehouseMovement(MovementType type)
     ui->warehouseRemoveLineButton->setEnabled(true);
     ui->warehouseLinesTableView->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::SelectedClicked | QAbstractItemView::EditKeyPressed);
 
-    // Seed with one empty line for convenience.
     warehouseLinesModel->setLines({ StockMovementLine{} });
     ui->warehouseLinesTableView->setCurrentIndex(warehouseLinesModel->index(0, 0));
     ui->warehouseLinesTableView->edit(warehouseLinesModel->index(0, 0));
@@ -718,7 +706,6 @@ void MainWindow::on_warehousePostButton_clicked()
     loadWarehouseMovements();
     showWarehouseMovement(newId);
 
-    // Keep Products tab consistent (stock + location come from warehouse history/relocations).
     loadProducts();
 }
 
@@ -737,7 +724,6 @@ void MainWindow::on_warehouseCancelMovementButton_clicked()
     loadWarehouseMovements();
     showWarehouseMovement(currentWarehouseMovementId);
 
-    // Keep Products tab consistent after cancellation.
     loadProducts();
 }
 

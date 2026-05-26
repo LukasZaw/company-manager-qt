@@ -12,7 +12,7 @@ public:
     QString phone;
     QString position;
     int departmentId{0};
-    QString department; // display name (from departments table)
+    QString department; // display name
     QDate hireDate;
     bool active{true};
     QString notes;

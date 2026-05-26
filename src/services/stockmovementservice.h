@@ -13,14 +13,10 @@ public:
     static StockMovement getMovementById(int id);
     static QList<StockMovementLine> getMovementLines(int movementId);
 
-    // Posts a movement (creates header + lines). For Issue/Adjust it validates that stock never goes below 0.
-    // For Relocate it updates products.location to header.toLocation.
     static bool postMovement(const StockMovement& header, const QList<StockMovementLine>& lines, int* outMovementId = nullptr);
 
-    // Cancels movement (does not delete). Canceled movements should be ignored in stock calculations.
     static bool cancelMovement(int movementId);
 
-    // Current stock based on history (non-canceled, affects_stock=1).
     static double getCurrentStockForProduct(int productId);
 
 private:

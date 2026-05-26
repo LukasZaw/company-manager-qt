@@ -182,7 +182,6 @@ bool LocationService::renameLocation(int id, const QString& newName)
         }
     }
 
-    // Update subtree paths: oldPath/... -> newPath/...
     {
         QSqlQuery q(db);
         q.prepare(

@@ -18,7 +18,7 @@ bool DatabaseManager::connect() {
         return false;
     }
 
-    // Enforce foreign keys in SQLite
+    // Enforce foreign keys
     {
         QSqlQuery pragmaQuery;
         if (!pragmaQuery.exec("PRAGMA foreign_keys = ON;")) {
@@ -87,7 +87,7 @@ void DatabaseManager::initialize() {
         return;
     }
 
-    // Ensure at least one category exists (minimal default)
+    // Ensure one category exists
     if (!query.exec("INSERT OR IGNORE INTO categories (name) VALUES ('Ogólna');")) {
         qDebug() << "INSERT default category ERROR:" << query.lastError().text();
     }
@@ -110,7 +110,6 @@ void DatabaseManager::initialize() {
         qDebug() << "CREATE INDEX locations ERROR:" << query.lastError().text();
     }
 
-    // Seed root location (id=1 for convenience)
     if (!query.exec("INSERT OR IGNORE INTO locations (id, parent_id, name, path) VALUES (1, NULL, 'Magazyn', 'Magazyn');")) {
         qDebug() << "INSERT default location ERROR:" << query.lastError().text();
     }

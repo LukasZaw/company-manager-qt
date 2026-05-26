@@ -115,7 +115,6 @@ Qt::ItemFlags StockMovementLinesModel::flags(const QModelIndex& index) const
 
     Qt::ItemFlags f = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 
-    // Allow editing in the UI. Product selection is typically done via delegate (combobox/completer).
     if (index.column() == Product || index.column() == Quantity) {
         f |= Qt::ItemIsEditable;
     }
@@ -149,7 +148,6 @@ bool StockMovementLinesModel::setData(const QModelIndex& index, const QVariant& 
         }
 
         if (index.column() == Product) {
-            // By default treat EditRole as productId. Caller can also use setLine/setLines.
             bool ok = false;
             const int productId = value.toInt(&ok);
             if (!ok)
