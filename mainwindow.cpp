@@ -656,6 +656,30 @@ void MainWindow::on_warehousePostButton_clicked()
     if (!warehouseIsEditingNew)
         return;
 
+    switch (currentWarehouseMovementType) {
+    case MovementType::Receipt:
+        if (warehouseToLocationId <= 0) {
+            QMessageBox::warning(this, tr("Błąd"), tr("Wybierz lokalizację docelową (Do)."));
+            return;
+        }
+        break;
+    case MovementType::Issue:
+        if (warehouseFromLocationId <= 0) {
+            QMessageBox::warning(this, tr("Błąd"), tr("Wybierz lokalizację źródłową (Z)."));
+            return;
+        }
+        break;
+    case MovementType::Relocate:
+        if (warehouseFromLocationId <= 0 || warehouseToLocationId <= 0) {
+            QMessageBox::warning(this, tr("Błąd"), tr("Wybierz lokalizację źródłową (Z) i docelową (Do)."));
+            return;
+        }
+        break;
+    case MovementType::Adjust:
+        // Location optional
+        break;
+    }
+
     StockMovement h;
     h.type = currentWarehouseMovementType;
     h.occurredAt = ui->warehouseOccurredAtEdit->dateTime();

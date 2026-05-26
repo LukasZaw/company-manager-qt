@@ -6,6 +6,7 @@
 #include <QHBoxLayout>
 #include <QInputDialog>
 #include <QItemSelectionModel>
+#include <QLineEdit>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QTreeView>

@@ -346,12 +346,32 @@ bool StockMovementService::postMovement(const StockMovement& header, const QList
         return false;
 
     // Type-specific sanity checks
-    if (h.type == MovementType::Relocate) {
-        h.affectsStock = false;
+    switch (h.type) {
+    case MovementType::Receipt:
+        h.affectsStock = true;
+        // Receipt goes into a location.
         if (h.toLocationId <= 0)
             return false;
-    } else {
+        break;
+
+    case MovementType::Issue:
         h.affectsStock = true;
+        // Issue takes out of a location.
+        if (h.fromLocationId <= 0)
+            return false;
+        break;
+
+    case MovementType::Relocate:
+        h.affectsStock = false;
+        // Relocation requires both ends.
+        if (h.fromLocationId <= 0 || h.toLocationId <= 0)
+            return false;
+        break;
+
+    case MovementType::Adjust:
+        h.affectsStock = true;
+        // Location is optional metadata for adjustments.
+        break;
     }
 
     for (const auto& l : normalizedLines) {
