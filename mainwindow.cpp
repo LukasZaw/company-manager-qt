@@ -15,12 +15,21 @@
 #include "src/ui/locationpickerdialog.h"
 #include "src/ui/locationmanagerdialog.h"
 #include "src/services/locationservice.h"
+#include "src/models/table/currentstockreportmodel.h"
 #include <QHeaderView>
 #include <QItemSelectionModel>
 #include <QMessageBox>
+#include <QFileDialog>
+#include <QFile>
+#include <QTextStream>
+#include <QDateTime>
 #include <QRegularExpression>
 #include <QSignalBlocker>
 #include <QSortFilterProxyModel>
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <QStringConverter>
+#endif
 
 
 
@@ -103,6 +112,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     loadEmployees();
     loadProducts();
+
+    initReportsUi();
 
     initWarehouseUi();
     loadWarehouseMovements();
@@ -377,6 +388,113 @@ void MainWindow::initWarehouseUi()
     ui->warehouseAddLineButton->setEnabled(false);
     ui->warehouseRemoveLineButton->setEnabled(false);
     ui->warehouseLinesTableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+}
+
+static QString csvEscape(const QString& value)
+{
+    QString v = value;
+    const bool needsQuotes = v.contains(';') || v.contains('"') || v.contains('\n') || v.contains('\r');
+    v.replace('"', "\"\"");
+    if (needsQuotes)
+        return '"' + v + '"';
+    return v;
+}
+
+void MainWindow::initReportsUi()
+{
+    // Left: report selector
+    ui->reportsListWidget->clear();
+
+    auto* currentStockItem = new QListWidgetItem(tr("Aktualny stan magazynu"));
+    currentStockItem->setData(Qt::UserRole, 0); // page index
+    ui->reportsListWidget->addItem(currentStockItem);
+
+    auto* receiptsHistoryItem = new QListWidgetItem(tr("Historia przyjęć (wkrótce)"));
+    receiptsHistoryItem->setData(Qt::UserRole, 1);
+    receiptsHistoryItem->setFlags(receiptsHistoryItem->flags() & ~Qt::ItemIsEnabled);
+    ui->reportsListWidget->addItem(receiptsHistoryItem);
+
+    auto* employeesListItem = new QListWidgetItem(tr("Lista pracowników (wkrótce)"));
+    employeesListItem->setData(Qt::UserRole, 1);
+    employeesListItem->setFlags(employeesListItem->flags() & ~Qt::ItemIsEnabled);
+    ui->reportsListWidget->addItem(employeesListItem);
+
+    // Right: current stock preview
+    currentStockReportModel = new CurrentStockReportModel(this);
+    ui->currentStockTableView->setModel(currentStockReportModel);
+    ui->currentStockTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->currentStockTableView->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->currentStockTableView->horizontalHeader()->setStretchLastSection(true);
+    ui->currentStockTableView->setSortingEnabled(false);
+
+    ui->reportsStackedWidget->setCurrentIndex(0);
+    ui->reportsListWidget->setCurrentRow(0);
+}
+
+void MainWindow::on_reportsListWidget_currentRowChanged(int currentRow)
+{
+    if (currentRow < 0)
+        return;
+
+    auto* item = ui->reportsListWidget->item(currentRow);
+    if (!item)
+        return;
+
+    const int pageIndex = item->data(Qt::UserRole).toInt();
+    ui->reportsStackedWidget->setCurrentIndex(pageIndex);
+
+    if (pageIndex == 0 && currentStockReportModel)
+        currentStockReportModel->reload();
+}
+
+void MainWindow::on_exportCurrentStockCsvButton_clicked()
+{
+    if (!currentStockReportModel)
+        return;
+
+    currentStockReportModel->reload();
+    const auto products = currentStockReportModel->products();
+
+    const QString suggested = QString("stan_magazynu_%1.csv").arg(QDateTime::currentDateTime().toString("yyyy-MM-dd"));
+    const QString filePath = QFileDialog::getSaveFileName(
+        this,
+        tr("Eksportuj CSV"),
+        suggested,
+        tr("CSV (*.csv)"));
+
+    if (filePath.trimmed().isEmpty())
+        return;
+
+    QFile f(filePath);
+    if (!f.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        QMessageBox::warning(this, tr("Błąd"), tr("Nie udało się zapisać pliku."));
+        return;
+    }
+
+    // UTF-8 BOM (helps Excel on Windows)
+    f.write("\xEF\xBB\xBF", 3);
+
+    QTextStream out(&f);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    out.setEncoding(QStringConverter::Utf8);
+#endif
+
+    out << "SKU;Produkt;Stan;Jedn.;Lokalizacja\n";
+
+    const QLocale loc;
+    for (const auto& p : products) {
+        const QString qty = loc.toString(p.quantity);
+        out << csvEscape(p.sku) << ';'
+            << csvEscape(p.name) << ';'
+            << csvEscape(qty) << ';'
+            << csvEscape(p.unit) << ';'
+            << csvEscape(p.location) << "\n";
+    }
+
+    out.flush();
+    f.close();
+
+    QMessageBox::information(this, tr("Gotowe"), tr("Zapisano raport do pliku CSV."));
 }
 
 void MainWindow::refreshWarehouseEmployees()

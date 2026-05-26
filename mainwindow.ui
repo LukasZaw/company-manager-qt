@@ -633,15 +633,147 @@
        <attribute name="title">
         <string>Raporty</string>
        </attribute>
-       <layout class="QVBoxLayout" name="reportsLayout">
-        <item>
-         <widget class="QLabel" name="reportsPlaceholder">
-          <property name="text">
-           <string>Widok raportów (w przygotowaniu)</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
+        <layout class="QHBoxLayout" name="reportsLayout">
+         <item>
+          <widget class="QSplitter" name="reportsSplitter">
+           <property name="orientation">
+            <enum>Qt::Orientation::Horizontal</enum>
+           </property>
+           <widget class="QWidget" name="reportsLeftPanel">
+            <property name="minimumSize">
+             <size>
+              <width>220</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>320</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <layout class="QVBoxLayout" name="reportsLeftLayout">
+             <property name="leftMargin">
+              <number>9</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="reportsTitleLabel">
+            <property name="text">
+             <string>Raporty</string>
+            </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QListWidget" name="reportsListWidget"/>
+             </item>
+             <item>
+              <spacer name="reportsLeftSpacer">
+            <property name="orientation">
+             <enum>Qt::Orientation::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+              </spacer>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="reportsRightPanel">
+            <layout class="QVBoxLayout" name="reportsRightLayout">
+             <item>
+              <widget class="QStackedWidget" name="reportsStackedWidget">
+            <widget class="QWidget" name="reportCurrentStockPage">
+             <layout class="QVBoxLayout" name="reportCurrentStockLayout">
+              <item>
+               <widget class="QLabel" name="currentStockTitleLabel">
+                <property name="text">
+                 <string>Aktualny stan magazynu</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="currentStockDescriptionLabel">
+                <property name="text">
+                 <string>Raport pokazuje stan na podstawie historii dokumentów magazynowych (nieedytowalny stan).</string>
+                </property>
+                <property name="wordWrap">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QTableView" name="currentStockTableView"/>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="currentStockButtonsLayout">
+                <item>
+                 <spacer name="currentStockButtonsSpacer">
+                  <property name="orientation">
+                <enum>Qt::Orientation::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="exportCurrentStockCsvButton">
+                  <property name="text">
+                <string>Eksportuj CSV...</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </widget>
+            <widget class="QWidget" name="reportComingSoonPage">
+             <layout class="QVBoxLayout" name="reportComingSoonLayout">
+              <item>
+               <widget class="QLabel" name="reportComingSoonTitleLabel">
+                <property name="text">
+                 <string>Wkrótce</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="reportComingSoonTextLabel">
+                <property name="text">
+                 <string>Ten raport będzie dostępny w kolejnej wersji.</string>
+                </property>
+                <property name="wordWrap">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="reportComingSoonSpacer">
+                <property name="orientation">
+                 <enum>Qt::Orientation::Vertical</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>20</width>
+                  <height>40</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </widget>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </widget>
+         </item>
+        </layout>
       </widget>
      </widget>
     </item>

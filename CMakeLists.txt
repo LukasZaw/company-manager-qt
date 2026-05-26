@@ -67,6 +67,8 @@ set(PROJECT_SOURCES
     src/models/table/categorytablemodel.cpp
     src/models/table/locationtreemodel.h
     src/models/table/locationtreemodel.cpp
+    src/models/table/currentstockreportmodel.h
+    src/models/table/currentstockreportmodel.cpp
     src/models/table/stockmovementslistmodel.h
     src/models/table/stockmovementslistmodel.cpp
     src/models/table/stockmovementlinesmodel.h

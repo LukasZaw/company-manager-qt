@@ -5,6 +5,8 @@
 #include "src/models/table/employeetablemodel.h"
 #include "src/models/table/producttablemodel.h"
 
+class CurrentStockReportModel;
+
 class QModelIndex;
 class QSortFilterProxyModel;
 class StockMovementsListModel;
@@ -69,6 +71,9 @@ private slots:
     void on_warehouseFromLocationPickButton_clicked();
     void on_warehouseToLocationPickButton_clicked();
 
+    void on_reportsListWidget_currentRowChanged(int currentRow);
+    void on_exportCurrentStockCsvButton_clicked();
+
 private:
     Ui::MainWindow *ui;
     EmployeeTableModel* employeeModel;
@@ -88,6 +93,9 @@ private:
     int warehouseFromLocationId{0};
     int warehouseToLocationId{0};
 
+    // Reports
+    CurrentStockReportModel* currentStockReportModel{nullptr};
+
     void loadEmployees();
     void loadProducts();
     void editEmployeeAtRow(int row);
@@ -102,5 +110,7 @@ private:
 
     void refreshWarehouseEmployees();
     void refreshWarehouseProductCatalog();
+
+    void initReportsUi();
 };
 #endif // MAINWINDOW_H
